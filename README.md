@@ -103,6 +103,25 @@ packer build jenkins.pkr.hcl
 
 **Benefits:** Consistency (no drift), speed (boot ready-to-use), security (vulnerabilities caught pre-deployment), testability, instant rollback.
 
+## 🔒 Security Scanning
+
+**Trivy Integration:**
+AMI builds include automated vulnerability scanning with Trivy v0.67.2.
+
+**Configuration:**
+- Scans entire root filesystem
+- Fails builds only on CRITICAL severity (production best practice)
+- Generates timestamped JSON reports
+- 15-minute scan timeout
+
+**Current Status:**
+- 0 CRITICAL vulnerabilities ✅
+- 113 HIGH in latest versions of kubectl v1.34, Helm v3.16+, Jenkins LTS (outdated Go stdlib/Spring dependencies used during compilation - awaiting upstream recompilation)
+- 1 HIGH in Amazon Linux kernel (SCSI target module - not used by Jenkins)
+
+**Approach:**
+Using latest stable versions of all tools. Vulnerabilities exist in upstream pre-compiled binaries and cannot be fixed without maintainer releases. Following AWS shared responsibility model and pragmatic risk management - tracked but don't block builds.
+
 ## 🔐 Security Features
 
 - ✅ All data encrypted at rest (EBS, RDS, EKS secrets, S3)
