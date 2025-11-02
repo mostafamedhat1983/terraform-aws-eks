@@ -9,3 +9,8 @@ docs/
 
 # Amazon Q workspace rules (personal preferences)
 .amazonq/
+# Packer build artifacts
+packer/manifest.json
+packer/trivy-report-*.json
+packer/*.log
+packer/packer_cache/

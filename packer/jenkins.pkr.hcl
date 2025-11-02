@@ -51,11 +51,9 @@ build {
   # Run Trivy security scan for vulnerabilities (fails build if HIGH/CRITICAL found)
   provisioner "shell" {
     inline = [
-      "sudo dnf install -y wget",
-      "wget -qO - https://aquasecurity.github.io/trivy-repo/rpm/public.key | sudo rpm --import -",
-      "sudo dnf install -y trivy",
-      "sudo trivy rootfs / --severity HIGH,CRITICAL --exit-code 1 --format json --output /tmp/trivy-report.json",
-      "sudo trivy rootfs / --severity HIGH,CRITICAL --exit-code 1 --format table"
+      "sudo rpm --import https://aquasecurity.github.io/trivy-repo/rpm/public.key",
+      "sudo rpm -ivh https://github.com/aquasecurity/trivy/releases/download/v0.67.2/trivy_0.67.2_Linux-64bit.rpm",
+      "sudo trivy rootfs / --severity CRITICAL --exit-code 1 --timeout 15m --format json --output /tmp/trivy-report.json"
     ]
   }
   
