@@ -24,14 +24,14 @@
     - name: Import Jenkins GPG key
       ansible.builtin.rpm_key:
         state: present
-        key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+        key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
     - name: Add Jenkins repository
       ansible.builtin.yum_repository:
         name: jenkins
         description: Jenkins stable repository
         baseurl: https://pkg.jenkins.io/redhat-stable/
         gpgcheck: true
-        gpgkey: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+        gpgkey: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
     - name: Install Jenkins
       ansible.builtin.dnf:
         name: jenkins
@@ -77,20 +77,19 @@
         state: present
       #
       # Helm setup
-    - name: Add Helm GPG key
-      ansible.builtin.rpm_key:
-        state: present
-        key: https://baltocdn.com/helm/signing.asc
-    - name: Add Helm repository
-      ansible.builtin.yum_repository:
-        name: helm-stable
-        description: Helm Stable Repository
-        baseurl: https://baltocdn.com/helm/stable/rpm/
-        gpgcheck: true
-    - name: Install Helm
-      ansible.builtin.dnf:
-        name: helm
-        state: present
+    - name: Download Helm installation script
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        dest: /tmp/get-helm-3.sh
+        mode: '0755'
+    - name: Install Helm using official script
+      ansible.builtin.command: /tmp/get-helm-3.sh
+      args:
+        creates: /usr/local/bin/helm
+    - name: Remove Helm installation script
+      ansible.builtin.file:
+        path: /tmp/get-helm-3.sh
+        state: absent
       #
       # Verification
     - name: Verify Docker installation
