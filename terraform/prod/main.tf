@@ -18,8 +18,9 @@ module "network" {
   public_subnets  = var.subnet_config
   private_subnets = var.private_subnet_config
 
-  igw_name          = "igw-prod"
-  nat_gateway_count = 2
+  igw_name                       = "igw-prod"
+  nat_gateway_count              = 2
+  eks_cluster_security_group_id  = module.eks.cluster_security_group_id
 }
 
 module "ec2" {

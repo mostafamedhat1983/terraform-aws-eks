@@ -41,3 +41,9 @@ variable "environment" {
   description = "Environment name (dev/prod) for resource naming"
   type        = string
 }
+
+variable "eks_cluster_security_group_id" {
+  description = "Security group ID of the EKS cluster for RDS access"
+  type        = string
+  default     = ""
+}
