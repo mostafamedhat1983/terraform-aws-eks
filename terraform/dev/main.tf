@@ -36,7 +36,7 @@ module "ec2" {
 }
 
 resource "aws_iam_policy" "jenkins_eks" {
-  name        = "jenkins-eks-access"
+  name        = "jenkins-eks-access-dev"
   description = "Allow Jenkins to describe EKS clusters for deployment"
   policy = jsonencode({
     Version = "2012-10-17"
@@ -50,7 +50,7 @@ resource "aws_iam_policy" "jenkins_eks" {
 
 module "jenkins_role" {
   source = "../modules/role"
-  name   = "ec2-ssm-ecr-role"
+  name   = "ec2-ssm-ecr-role-dev"
   policy_arns = [
     "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser",
@@ -60,7 +60,7 @@ module "jenkins_role" {
 
 module "eks_cluster_role" {
   source = "../modules/role"
-  name   = "EKS-cluster-role"
+  name   = "EKS-cluster-role-dev"
   service = "eks.amazonaws.com"
   policy_arns = [
     "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
@@ -69,7 +69,7 @@ module "eks_cluster_role" {
 
 module "eks_node_role" {
   source = "../modules/role"
-  name   = "EKS-node-role"
+  name   = "EKS-node-role-dev"
   policy_arns = [
     "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
