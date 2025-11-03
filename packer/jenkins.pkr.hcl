@@ -29,6 +29,11 @@ source "amazon-ebs" "aws" {
   }
   
   ssh_username = "ec2-user"
+  
+  # Tag temporary instance to prevent accidental deletion
+  run_tags = {
+    Name = "Packer-Jenkins-Builder"
+  }
 }
 
 # Build configuration

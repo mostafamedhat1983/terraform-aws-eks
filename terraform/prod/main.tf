@@ -80,9 +80,9 @@ module "eks_node_role" {
 module "rds" {
   source = "../modules/rds"
 
-  identifier           = "todo-db-prod"
-  db_subnet_group_name = "todo-db-subnet-group-prod"
-  secret_name          = "todo-db-prod-credentials"
+  identifier           = "platform-db-prod"
+  db_subnet_group_name = "platform-db-subnet-group-prod"
+  secret_name          = "platform-db-prod-credentials"
 
   subnet_ids = [
     module.network.private_subnet_ids["rds-2a"],
@@ -100,17 +100,17 @@ module "rds" {
   multi_az                = true
   backup_retention_period = 7
   skip_final_snapshot     = false
-  final_snapshot_identifier = "todo-db-prod-final-snapshot"
+  final_snapshot_identifier = "platform-db-prod-final-snapshot"
 
   tags = {
-    Name = "todo-db-prod"
+    Name = "platform-db-prod"
   }
 }
 
 module "eks" {
   source = "../modules/eks"
 
-  cluster_name     = "todo-app-prod"
+  cluster_name     = "platform-prod"
   cluster_role_arn = module.eks_cluster_role.role_arn
   node_role_arn    = module.eks_node_role.role_arn
   jenkins_role_arn = module.jenkins_role.role_arn
@@ -124,7 +124,7 @@ module "eks" {
   endpoint_private_access = true
   endpoint_public_access  = false
 
-  node_group_name   = "todo-app-prod-nodes"
+  node_group_name   = "platform-prod-nodes"
   node_desired_size = 3
   node_max_size     = 5
   node_min_size     = 2
