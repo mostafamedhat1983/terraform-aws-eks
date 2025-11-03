@@ -66,7 +66,7 @@ variable "ec2_config" {
   }))
   default = {
     "jenkins-2a" = {
-      instance_type     = "t2.medium"
+      instance_type     = "t3.medium"
       availability_zone = "us-east-2a"
       tags              = { Name = "jenkins_main" }
     }
