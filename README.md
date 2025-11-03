@@ -1,6 +1,6 @@
-# Todo App Infrastructure - AWS EKS with Terraform
+# AWS EKS Infrastructure with Terraform
 
-Production-ready AWS infrastructure built from scratch for deploying a containerized todo application on EKS. Demonstrates real-world DevOps practices, security hardening, and infrastructure as code principles.
+Production-ready AWS infrastructure built from scratch for deploying containerized applications on EKS. Demonstrates real-world DevOps practices, security hardening, and infrastructure as code principles.
 
 ## 🎯 Project Overview
 
@@ -223,14 +223,14 @@ Single IAM role module reused for EC2 and EKS by changing the `service` paramete
 ```bash
 # Dev
 aws secretsmanager create-secret \
-  --name todo-db-dev-credentials \
-  --secret-string '{"username":"admin","password":"YourDevPassword","dbname":"tododb"}' \
+  --name platform-db-dev-credentials \
+  --secret-string '{"username":"admin","password":"YourDevPassword","dbname":"platformdb"}' \
   --region us-east-2
 
 # Prod
 aws secretsmanager create-secret \
-  --name todo-db-prod-credentials \
-  --secret-string '{"username":"admin","password":"YourStrongProdPassword","dbname":"tododb"}' \
+  --name platform-db-prod-credentials \
+  --secret-string '{"username":"admin","password":"YourStrongProdPassword","dbname":"platformdb"}' \
   --region us-east-2
 ```
 
@@ -245,7 +245,7 @@ terraform apply
 **3. Configure kubectl:**
 ```bash
 aws ssm start-session --target <jenkins-instance-id>
-aws eks update-kubeconfig --name todo-app-dev --region us-east-2
+aws eks update-kubeconfig --name platform-dev --region us-east-2
 ```
 
 ## 📊 Cost Breakdown
