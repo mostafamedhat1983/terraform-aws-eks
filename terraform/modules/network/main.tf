@@ -152,6 +152,17 @@ resource "aws_security_group_rule" "rds_from_eks" {
   description              = "MySQL access from EKS cluster"
 }
 
+# Allow Jenkins to access EKS control plane
+resource "aws_security_group_rule" "eks_from_jenkins" {
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.jenkins.id
+  security_group_id        = var.eks_cluster_security_group_id
+  description              = "Allow Jenkins to access EKS API"
+}
+
 # EKS Node Security Group
 resource "aws_security_group" "eks_node" {
   name        = "${var.environment}-eks-node-sg"

@@ -284,11 +284,12 @@ Built with **Amazon Q** and **Gemini Code Assist** as productivity tools, not co
 
 **Production Creation:** Amazon Q replicated dev to prod by adjusting variables (NAT, RDS, instance sizes) - demonstrating modular design benefits.
 
-**Post-Deployment Review:** After initial completion, Amazon Q performed comprehensive code review and identified 4 integration issues:
+**Post-Deployment Review:** After initial completion, Amazon Q performed comprehensive code review and identified 5 integration issues:
 1. **Packer-built AMI not integrated** - Terraform was using hardcoded AMI ID instead of automatically using latest Packer build (FIXED)
 2. **EKS-RDS connectivity broken** - Security group configuration prevented pods from reaching database (FIXED)
 3. **Multi-environment deployment limitation** - Security group names would conflict if dev and prod deployed to same AWS account (FIXED)
 4. **NAT Gateway routing logic fragility** - Works correctly but relies on naming conventions (tracked for future improvement)
+5. **Jenkins-EKS connectivity broken** - Jenkins EC2 couldn't access EKS control plane API (kubectl timeout). EKS cluster security group didn't allow inbound HTTPS from Jenkins security group. Fixed by adding port 443 ingress rule (FIXED)
 
 Critical issues were analyzed, root causes identified, and fixes implemented, demonstrating iterative improvement and the value of thorough code review in catching integration problems before production deployment.
 
