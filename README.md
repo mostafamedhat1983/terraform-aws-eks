@@ -15,7 +15,7 @@ Two complete environments:
 ### Development Environment
 **Cost-optimized for learning:**
 - **VPC:** 2 AZs, 8 subnets (2 public, 6 private)
-- **Compute:** 2x Jenkins EC2 (t2.medium)
+- **Compute:** 1x Jenkins Controller EC2 (t2.medium)
 - **Database:** RDS MySQL 8.0 (single-AZ, 20GB, encrypted)
 - **Kubernetes:** EKS 1.34 with 2x t3.small nodes (20GB disk)
 - **Networking:** 1 NAT Gateway
@@ -25,7 +25,7 @@ Two complete environments:
 ### Production Environment
 **High availability and performance:**
 - **VPC:** Same architecture for consistency
-- **Compute:** 2x Jenkins EC2 (t3.medium)
+- **Compute:** 1x Jenkins Controller EC2 (t3.medium)
 - **Database:** RDS MySQL 8.0 (Multi-AZ, 50GB, 7-day backups, encrypted)
 - **Kubernetes:** EKS 1.34 with 3x t3.medium nodes (30GB disk)
 - **Networking:** 2 NAT Gateways (one per AZ)
@@ -164,20 +164,33 @@ Using latest stable versions of all tools. Vulnerabilities exist in upstream pre
 
 **Prod:** 3x t3.medium nodes (desired: 3, min: 2, max: 5), 30GB disk
 
+### Jenkins Architecture
+**Single Controller + EKS Agents:**
+- 1 Jenkins controller EC2 instance per environment
+- Jenkins agents run as ephemeral pods in EKS (using Kubernetes plugin)
+- Dynamic scaling based on build demand
+- Cost-effective: agents only run when needed
+
+**Why not 2 Jenkins instances?**
+Originally deployed 2 EC2 instances (controller + static agent), but switched to EKS-based agents for better resource utilization and modern CI/CD practices.
+
 ### SSM Session Manager (No Bastion)
 **Benefits:** No SSH keys, no bastion maintenance, CloudWatch logging, IAM-based access, no inbound rules, saves ~$15/month
 
 **Access Jenkins:**
 ```bash
-aws ssm start-session --target <jenkins-instance-id>
+aws ssm start-session --target <jenkins-instance-id> --region us-east-2
 ```
 
 **Port Forwarding:**
 ```bash
 aws ssm start-session --target <jenkins-instance-id> \
   --document-name AWS-StartPortForwardingSession \
-  --parameters '{"portNumber":["8080"],"localPortNumber":["8080"]}'
+  --parameters '{"portNumber":["8080"],"localPortNumber":["8080"]}' \
+  --region us-east-2
 ```
+
+**Note:** First SSM connection after instance launch typically takes 3-5 minutes. First boot from a new AMI may take up to 30 minutes for initial SSM Agent setup. Subsequent connections are immediate.
 
 ### Secrets Management
 Manual creation outside Terraform ensures secrets persist across `terraform destroy` and never appear in code or Git.
@@ -237,25 +250,27 @@ aws eks update-kubeconfig --name todo-app-dev --region us-east-2
 
 ## 📊 Cost Breakdown
 
-### Development (~$180/month)
+### Development (~$165/month)
 | Service | Config | Cost |
 |---------|--------|------|
 | NAT Gateway | 1x | ~$35 |
-| EC2 (Jenkins) | 2x t2.medium | ~$30 |
+| EC2 (Jenkins) | 1x t2.medium | ~$15 |
 | RDS MySQL | db.t3.micro, single-AZ, 20GB | ~$15 |
 | EKS Control Plane | 1 cluster | $73 |
 | EKS Workers | 2x t3.small | ~$30 |
 
-### Production (~$340/month)
+### Production (~$310/month)
 | Service | Config | Cost |
 |---------|--------|------|
 | NAT Gateway | 2x (HA) | ~$70 |
-| EC2 (Jenkins) | 2x t3.medium | ~$60 |
+| EC2 (Jenkins) | 1x t3.medium | ~$30 |
 | RDS MySQL | db.t3.small, Multi-AZ, 50GB | ~$50 |
 | EKS Control Plane | 1 cluster | $73 |
 | EKS Workers | 3x t3.medium | ~$90 |
 
-**Difference:** +$160/month for HA NAT, larger instances, Multi-AZ RDS, more EKS capacity.
+**Difference:** +$145/month for HA NAT, larger instances, Multi-AZ RDS, more EKS capacity.
+
+**Savings:** Removed second Jenkins EC2 instance (~$15/month dev, ~$30/month prod) by using EKS pods for Jenkins agents.
 
 ## 🤖 AI-Assisted Development
 

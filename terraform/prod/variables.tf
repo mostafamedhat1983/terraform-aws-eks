@@ -70,10 +70,6 @@ variable "ec2_config" {
       availability_zone = "us-east-2a"
       tags              = { Name = "jenkins_main" }
     }
-    "jenkins-2b" = {
-      instance_type     = "t3.medium"
-      availability_zone = "us-east-2b"
-      tags              = { Name = "jenkins_node" }
-    }
+    # Removed jenkins-2b - using EKS pods for Jenkins agents
   }
 }
