@@ -36,3 +36,8 @@ variable "nat_gateway_count" {
   default     = 1
   description = "Number of NAT gateways to create (1 for dev, 2 for prod)"
 }
+
+variable "environment" {
+  description = "Environment name (dev/prod) for resource naming"
+  type        = string
+}

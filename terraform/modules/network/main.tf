@@ -102,12 +102,12 @@ resource "aws_route_table_association" "private" {
 
 # Jenkins Security Group
 resource "aws_security_group" "jenkins" {
-  name        = "jenkins-sg"
+  name        = "${var.environment}-jenkins-sg"
   description = "Security group for Jenkins instances"
   vpc_id      = aws_vpc.this.id
 
   tags = {
-    Name = "jenkins-sg"
+    Name = "${var.environment}-jenkins-sg"
   }
 }
 
@@ -133,12 +133,12 @@ resource "aws_security_group_rule" "jenkins_outbound" {
 
 # RDS Security Group
 resource "aws_security_group" "rds" {
-  name        = "rds-sg"
+  name        = "${var.environment}-rds-sg"
   description = "Security group for RDS database"
   vpc_id      = aws_vpc.this.id
 
   tags = {
-    Name = "rds-sg"
+    Name = "${var.environment}-rds-sg"
   }
 }
 
@@ -154,12 +154,12 @@ resource "aws_security_group_rule" "rds_from_eks" {
 
 # EKS Node Security Group
 resource "aws_security_group" "eks_node" {
-  name        = "eks-node-sg"
+  name        = "${var.environment}-eks-node-sg"
   description = "Security group for EKS worker nodes"
   vpc_id      = aws_vpc.this.id
 
   tags = {
-    Name = "eks-node-sg"
+    Name = "${var.environment}-eks-node-sg"
   }
 }
 
@@ -185,12 +185,12 @@ resource "aws_security_group_rule" "eks_node_outbound" {
 
 # VPC Endpoint Security Group
 resource "aws_security_group" "vpc_endpoints" {
-  name        = "vpc-endpoints-sg"
+  name        = "${var.environment}-vpc-endpoints-sg"
   description = "Security group for VPC endpoints"
   vpc_id      = aws_vpc.this.id
 
   tags = {
-    Name = "vpc-endpoints-sg"
+    Name = "${var.environment}-vpc-endpoints-sg"
   }
 }
 
