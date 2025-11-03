@@ -18,9 +18,9 @@ module "network" {
   public_subnets  = var.subnet_config
   private_subnets = var.private_subnet_config
 
-  igw_name                       = "igw-prod"
-  nat_gateway_count              = 2
-  eks_cluster_security_group_id  = module.eks.cluster_security_group_id
+  igw_name                      = "igw-prod"
+  nat_gateway_count             = 2
+  eks_cluster_security_group_id = module.eks.cluster_security_group_id
 }
 
 module "ec2" {
@@ -97,9 +97,9 @@ module "rds" {
   engine_version = "8.0"
   instance_class = "db.t3.small"
 
-  multi_az                = true
-  backup_retention_period = 7
-  skip_final_snapshot     = false
+  multi_az                  = true
+  backup_retention_period   = 7
+  skip_final_snapshot       = false
   final_snapshot_identifier = "platform-db-prod-final-snapshot"
 
   tags = {
