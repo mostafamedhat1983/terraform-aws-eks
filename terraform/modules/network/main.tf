@@ -143,7 +143,6 @@ resource "aws_security_group" "rds" {
 }
 
 resource "aws_security_group_rule" "rds_from_eks" {
-  count                    = var.eks_cluster_security_group_id != "" ? 1 : 0
   type                     = "ingress"
   from_port                = 3306
   to_port                  = 3306
