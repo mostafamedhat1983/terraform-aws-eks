@@ -12,6 +12,9 @@
 Production-ready AWS infrastructure built from scratch for deploying containerized applications on EKS. Demonstrates real-world DevOps practices, security hardening, and infrastructure as code principles.
 
 ## 🎯 Project Overview
+<img width="1042" height="812" alt="infra (1)" src="https://github.com/user-attachments/assets/f9134293-023b-45a3-903a-a18208fe532b" />
+
+
 
 Every line of code was written with intention, reviewed, debugged, and improved through multiple iterations. The infrastructure evolved from basic requirements to a secure, scalable, production-ready setup.
 
