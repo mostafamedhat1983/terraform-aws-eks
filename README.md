@@ -27,7 +27,7 @@ Two complete environments:
 ### Development Environment
 **Cost-optimized for learning:**
 - **VPC:** 2 AZs, 8 subnets (2 public, 6 private)
-- **Compute:** 1x Jenkins Controller EC2 (t2.medium)
+- **Compute:** 1x Jenkins Controller EC2 (t3.medium)
 - **Database:** RDS MySQL 8.0 (single-AZ, 20GB, encrypted)
 - **Kubernetes:** EKS 1.34 with 2x t3.small nodes (20GB disk)
 - **Networking:** 1 NAT Gateway
