@@ -56,7 +56,7 @@ resource "aws_iam_policy" "jenkins_bedrock" {
     Statement = [{
       Effect   = "Allow"
       Action   = ["bedrock:InvokeModel"]
-      Resource = "arn:aws:bedrock:us-east-2::foundation-model/us.anthropic.claude-3-haiku-20240307-v1:0"
+      Resource = "arn:aws:bedrock:us-east-2:586794447516:inference-profile/us.anthropic.claude-3-haiku-20240307-v1:0"
     }]
   })
 }
