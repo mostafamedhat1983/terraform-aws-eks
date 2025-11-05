@@ -61,19 +61,6 @@ resource "aws_iam_policy" "jenkins_bedrock" {
   })
 }
 
-resource "aws_iam_policy" "jenkins_bedrock" {
-  name        = "jenkins-bedrock-access-dev"
-  description = "Allow Jenkins to invoke AWS Bedrock models for chatbot deployment"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["bedrock:InvokeModel"]
-      Resource = "arn:aws:bedrock:us-east-2::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
-    }]
-  })
-}
-
 module "jenkins_role" {
   source = "../modules/role"
   name   = "ec2-ssm-ecr-role-dev"
