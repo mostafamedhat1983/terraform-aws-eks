@@ -145,3 +145,10 @@ module "eks" {
   instance_types    = ["t3.medium"]
   disk_size         = 30
 }
+
+# Parameter Store for RDS endpoint
+resource "aws_ssm_parameter" "rds_endpoint" {
+  name  = "rds-prod-endpoint"
+  type  = "String"
+  value = module.rds.db_instance_endpoint
+}
