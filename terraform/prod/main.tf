@@ -150,5 +150,5 @@ module "eks" {
 resource "aws_ssm_parameter" "rds_endpoint" {
   name  = "rds-prod-endpoint"
   type  = "String"
-  value = module.rds.db_instance_endpoint
+  value = module.rds.db_endpoint
 }
