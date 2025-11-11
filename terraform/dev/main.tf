@@ -91,6 +91,15 @@ module "eks_node_role" {
   ]
 }
 
+module "ebs_csi_driver_role" {
+  source      = "../modules/role"
+  name        = "EKS-ebs-csi-driver-role-dev"
+  service     = "pods.eks.amazonaws.com"
+  policy_arns = [
+    "arn:aws:iam::aws:policy/AmazonEBSCSIDriverPolicy"
+  ]
+}
+
 module "rds" {
   source = "../modules/rds"
 
@@ -150,4 +159,11 @@ resource "aws_ssm_parameter" "rds_endpoint" {
   name  = "rds-dev-endpoint"
   type  = "String"
   value = module.rds.db_endpoint
+}
+
+resource "aws_eks_pod_identity_association" "ebs_csi_driver" {
+  cluster_name    = module.eks.cluster_name
+  namespace       = "kube-system"
+  service_account = "ebs-csi-controller-sa"
+  role_arn        = module.ebs_csi_driver_role.role_arn
 }
