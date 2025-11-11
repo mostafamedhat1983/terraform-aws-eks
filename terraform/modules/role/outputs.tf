@@ -5,7 +5,7 @@ output "role_id" {
 
 output "instance_profile_name" {
   description = "The name of the instance profile"
-  value       = aws_iam_instance_profile.this.name
+  value       = var.service == "ec2.amazonaws.com" ? aws_iam_instance_profile.this[0].name : null
 }
 
 output "role_arn" {
