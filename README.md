@@ -60,7 +60,8 @@ Two complete environments:
 
 **Modern AWS Features:**
 - S3 Native State Locking (2024) - `use_lockfile = true` instead of DynamoDB
-- EKS Access Entry API (2023) - `authentication_mode = "API"` instead of aws-auth ConfigMap
+- EKS Access Entry API (2023) - For user/role access, replacing the legacy `aws-auth` ConfigMap.
+- EKS Pod Identity (2023) - For pod permissions, replacing the older IRSA and OIDC provider configuration.
 - ECR with IAM Authentication - no Docker Hub credentials needed
 - Secrets Manager bidirectional integration - Terraform reads and updates secrets
 - Flexible IAM Role Module - single module reused for EC2 and EKS by changing `service` parameter
@@ -168,6 +169,15 @@ Using latest stable versions of all tools. Vulnerabilities exist in upstream pre
 
 ### RDS Configuration
 **Dev:** Single-AZ, 20GB, 1-day backups, db.t3.micro, skip_final_snapshot
+
+### EBS CSI Driver for Persistent Storage
+The AWS EBS CSI Driver is included to provide persistent storage capabilities to the EKS cluster. This is critical for a production-ready platform.
+
+**Primary Use Cases:**
+- **Jenkins Agent Workspaces:** Allows Jenkins agent pods to have a persistent filesystem for checking out code, caching dependencies, and storing build artifacts, which is essential for reliable CI/CD.
+- **Future-Proofing:** Enables the deployment of other stateful applications (e.g., monitoring tools like Prometheus, message queues, or other databases) without requiring infrastructure changes.
+
+This transforms the cluster from a simple stateless application host into a versatile platform for a wide range of workloads.
 
 **Prod:** Multi-AZ, 50GB, 7-day backups, db.t3.small, final snapshot enabled
 
