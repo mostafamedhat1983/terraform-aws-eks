@@ -1,7 +1,7 @@
 resource "aws_iam_role" "this" {
   name = var.name
 
-  # Allows EC2 instances to assume this role.
+  # Allows a service to assume this role.
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -23,6 +23,7 @@ resource "aws_iam_role_policy_attachment" "this" {
 }
 
 resource "aws_iam_instance_profile" "this" {
+  count = var.service == "ec2.amazonaws.com" ? 1 : 0
   name = var.name
   role = aws_iam_role.this.name
 }
