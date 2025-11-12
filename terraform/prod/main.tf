@@ -91,15 +91,6 @@ module "eks_node_role" {
   ]
 }
 
-module "ebs_csi_driver_role" {
-  source      = "../modules/role"
-  name        = "EKS-ebs-csi-driver-role-prod"
-  service     = "pods.eks.amazonaws.com"
-  policy_arns = [
-    "arn:aws:iam::aws:policy/AmazonEBSCSIDriverPolicy"
-  ]
-}
-
 module "rds" {
   source = "../modules/rds"
 
@@ -132,13 +123,12 @@ module "rds" {
 
 module "eks" {
   source = "../modules/eks"
-
-  cluster_name     = "platform-prod"
-  cluster_role_arn = module.eks_cluster_role.role_arn
-  node_role_arn    = module.eks_node_role.role_arn
-  jenkins_role_arn = module.jenkins_role.role_arn
-  cluster_version  = "1.34"
-
+  cluster_name        = "platform-prod"
+  cluster_role_arn    = module.eks_cluster_role.role_arn
+  node_role_arn       = module.eks_node_role.role_arn
+  jenkins_role_arn    = module.jenkins_role.role_arn
+  cluster_version     = "1.34"
+  
   subnet_ids = [
     module.network.private_subnet_ids["eks-2a"],
     module.network.private_subnet_ids["eks-2b"]
@@ -160,11 +150,4 @@ resource "aws_ssm_parameter" "rds_endpoint" {
   name  = "rds-prod-endpoint"
   type  = "String"
   value = module.rds.db_endpoint
-}
-
-resource "aws_eks_pod_identity_association" "ebs_csi_driver" {
-  cluster_name    = module.eks.cluster_name
-  namespace       = "kube-system"
-  service_account = "ebs-csi-controller-sa"
-  role_arn        = module.ebs_csi_driver_role.role_arn
 }
