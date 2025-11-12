@@ -114,7 +114,7 @@ module "rds" {
   multi_az                  = true
   backup_retention_period   = 7
   skip_final_snapshot       = false
-  final_snapshot_identifier = "platform-db-prod-final-snapshot"
+  final_snapshot_identifier = "platform-db-prod-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
 
   tags = {
     Name = "platform-db-prod"
