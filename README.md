@@ -60,11 +60,11 @@ Two complete environments:
 
 **Modern AWS Features:**
 - S3 Native State Locking (2024) - `use_lockfile = true` instead of DynamoDB
-- EKS Access Entry API (2023) - For user/role access, replacing the legacy `aws-auth` ConfigMap.
-- EKS Pod Identity (2023) - For pod permissions, replacing the older IRSA and OIDC provider configuration.
+- EKS Access Entry API (2023) - For user/role access, replacing the legacy `aws-auth` ConfigMap
+- EKS Pod Identity (2023) - For EBS CSI Driver authentication, simpler than OIDC/IRSA
 - ECR with IAM Authentication - no Docker Hub credentials needed
 - Secrets Manager bidirectional integration - Terraform reads and updates secrets
-- Flexible IAM Role Module - single module reused for EC2 and EKS by changing `service` parameter
+- Flexible IAM Role Module - single module reused for EC2, EKS, and Pod Identity by changing `service` parameter
 
 **Intentional Design Decisions:**
 - Packer-built AMI for consistency (not AWS "latest" AMI)
@@ -170,16 +170,16 @@ Using latest stable versions of all tools. Vulnerabilities exist in upstream pre
 ### RDS Configuration
 **Dev:** Single-AZ, 20GB, 1-day backups, db.t3.micro, skip_final_snapshot
 
+**Prod:** Multi-AZ, 50GB, 7-day backups, db.t3.small, timestamped final snapshots (prevents destroy conflicts)
+
 ### EBS CSI Driver for Persistent Storage
-The AWS EBS CSI Driver is included to provide persistent storage capabilities to the EKS cluster. This is critical for a production-ready platform.
+The AWS EBS CSI Driver provides persistent storage capabilities using EKS Pod Identity authentication.
 
 **Primary Use Cases:**
-- **Jenkins Agent Workspaces:** Allows Jenkins agent pods to have a persistent filesystem for checking out code, caching dependencies, and storing build artifacts, which is essential for reliable CI/CD.
-- **Future-Proofing:** Enables the deployment of other stateful applications (e.g., monitoring tools like Prometheus, message queues, or other databases) without requiring infrastructure changes.
+- **Jenkins Agent Workspaces:** Persistent filesystem for code checkout, dependency caching, and build artifacts
+- **Future-Proofing:** Enables stateful applications (Prometheus, message queues, databases) without infrastructure changes
 
-This transforms the cluster from a simple stateless application host into a versatile platform for a wide range of workloads.
-
-**Prod:** Multi-AZ, 50GB, 7-day backups, db.t3.small, final snapshot enabled
+**Authentication:** Uses EKS Pod Identity with IAM role created via the role module (`service = "pods.eks.amazonaws.com"`), eliminating OIDC provider complexity.
 
 ### EKS Configuration
 **Dev:** 2x t3.small nodes (desired: 2, min: 1, max: 3), 20GB disk

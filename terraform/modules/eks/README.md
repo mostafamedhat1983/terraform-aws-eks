@@ -78,13 +78,20 @@ module "eks" {
   - Jenkins access via EKS Access Entry
   - No legacy aws-auth ConfigMap needed
 
+- **Persistent Storage:**
+  - EBS CSI Driver with Pod Identity authentication
+  - No OIDC provider required
+
 - **Monitoring:**
-  - CloudWatch logging for API, audit, authenticator, controllerManager, scheduler
+  - CloudWatch logging for API, audit, authenticator
 
 ## Resources Created
 
 - EKS Cluster
 - EKS Managed Node Group
 - KMS key for secrets encryption
-- CloudWatch log group
 - EKS Access Entry for Jenkins
+- Pod Identity Agent addon
+- EBS CSI Driver role (via role module)
+- Pod Identity Association for EBS CSI
+- EBS CSI Driver addon

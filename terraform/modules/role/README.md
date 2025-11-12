@@ -31,6 +31,19 @@ module "eks_cluster_role" {
 }
 ```
 
+### For EKS Pod Identity (EBS CSI Driver)
+```hcl
+module "ebs_csi_driver_role" {
+  source = "../modules/role"
+  
+  name    = "ebs-csi-driver-role"
+  service = "pods.eks.amazonaws.com"
+  policy_arns = [
+    "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  ]
+}
+```
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -51,11 +64,13 @@ module "eks_cluster_role" {
 
 - `ec2.amazonaws.com` (default) - For EC2 instances
 - `eks.amazonaws.com` - For EKS clusters
+- `pods.eks.amazonaws.com` - For EKS Pod Identity (automatically includes `sts:TagSession` action)
 - Any AWS service principal
 
 ## Features
 
 - Flexible service principal support
 - Automatic instance profile creation for EC2
+- Automatic `sts:TagSession` action for Pod Identity
 - Supports multiple policy attachments
 - Follows least privilege principle
