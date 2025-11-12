@@ -91,58 +91,38 @@ resource "aws_eks_addon" "pod_identity_agent" {
   addon_name   = "eks-pod-identity-agent"
 }
 
-
-data "tls_certificate" "this" {
-  url = aws_eks_cluster.this.identity[0].oidc[0].issuer
+# EBS CSI Driver Role using Pod Identity
+module "ebs_csi_driver_role" {
+  source = "../role"
+  
+  name    = "${var.cluster_name}-ebs-csi-driver"
+  service = "pods.eks.amazonaws.com"
+  
+  policy_arns = [
+    "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  ]
 }
 
-resource "aws_iam_openid_connect_provider" "this" {
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [data.tls_certificate.this.certificates[0].sha1_fingerprint]
-  url             = aws_eks_cluster.this.identity[0].oidc[0].issuer
-}
+# Pod Identity Association for EBS CSI Driver
+resource "aws_eks_pod_identity_association" "ebs_csi_driver" {
+  cluster_name    = aws_eks_cluster.this.name
+  namespace       = "kube-system"
+  service_account = "ebs-csi-controller-sa"
+  role_arn        = module.ebs_csi_driver_role.role_arn
 
-
-# EBS CSI Driver IAM Role
-resource "aws_iam_role" "ebs_csi_driver" {
-  name = "${var.cluster_name}-ebs-csi-driver"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Federated = aws_iam_openid_connect_provider.this.arn
-      }
-      Action = "sts:AssumeRoleWithWebIdentity"
-      Condition = {
-        StringEquals = {
-          "${replace(aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:kube-system:ebs-csi-controller-sa"
-          "${replace(aws_eks_cluster.this.identity[0].oidc[0].issuer, "https://", "")}:aud" = "sts.amazonaws.com"
-        }
-      }
-    }]
-  })
-
-  tags = {
-    Name = "${var.cluster_name}-ebs-csi-driver-role"
-  }
-}
-
-# Attach AWS managed policy for EBS CSI Driver
-resource "aws_iam_role_policy_attachment" "ebs_csi_driver" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-  role       = aws_iam_role.ebs_csi_driver.name
+  depends_on = [
+    aws_eks_addon.pod_identity_agent,
+    module.ebs_csi_driver_role
+  ]
 }
 
 # EBS CSI Driver Addon
 resource "aws_eks_addon" "ebs_csi_driver" {
-  cluster_name             = aws_eks_cluster.this.name
-  addon_name               = "aws-ebs-csi-driver"
-  service_account_role_arn = aws_iam_role.ebs_csi_driver.arn
+  cluster_name = aws_eks_cluster.this.name
+  addon_name   = "aws-ebs-csi-driver"
   
   depends_on = [
     aws_eks_addon.pod_identity_agent,
-    aws_iam_role_policy_attachment.ebs_csi_driver
+    aws_eks_pod_identity_association.ebs_csi_driver
   ]
 }
