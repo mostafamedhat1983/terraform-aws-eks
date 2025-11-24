@@ -150,6 +150,7 @@ Using latest stable versions of all tools. Vulnerabilities exist in upstream pre
 - ✅ Secrets Manager for database credentials
 - ✅ KMS key rotation enabled for EKS secrets encryption
 - ✅ S3 state versioning enabled
+- ✅ AWS Secrets Store CSI Driver for mounting secrets from Secrets Manager
 
 **Zero Secret Exposure:**
 - RDS credentials in Secrets Manager (encrypted with KMS)
@@ -176,14 +177,19 @@ Using latest stable versions of all tools. Vulnerabilities exist in upstream pre
 
 **Prod:** Multi-AZ, 50GB, 7-day backups, db.t3.small, timestamped final snapshots (prevents destroy conflicts)
 
-### EBS CSI Driver for Persistent Storage
-The AWS EBS CSI Driver provides persistent storage capabilities using EKS Pod Identity authentication.
+### EKS Storage & Secrets Management
+The cluster includes two CSI drivers using EKS Pod Identity authentication:
 
-**Primary Use Cases:**
+**EBS CSI Driver** - Persistent storage capabilities:
 - **Jenkins Agent Workspaces:** Persistent filesystem for code checkout, dependency caching, and build artifacts
 - **Future-Proofing:** Enables stateful applications (Prometheus, message queues, databases) without infrastructure changes
 
-**Authentication:** Uses EKS Pod Identity with IAM role created via the role module (`service = "pods.eks.amazonaws.com"`), eliminating OIDC provider complexity.
+**AWS Secrets Store CSI Driver** - Secrets management:
+- **Application Secrets:** Mount secrets from AWS Secrets Manager as files in pods
+- **Database Credentials:** Secure access to RDS credentials without hardcoding
+- **Environment-Scoped Access:** IAM policies restrict access to environment-specific secrets (dev/prod)
+
+**Authentication:** Both drivers use EKS Pod Identity with IAM roles created via the role module (`service = "pods.eks.amazonaws.com"`), eliminating OIDC provider complexity.
 
 ### EKS Configuration
 **Dev:** 2x t3.small nodes (desired: 2, min: 1, max: 3), 20GB disk
@@ -280,7 +286,7 @@ aws eks update-kubeconfig --name platform-dev --region us-east-2
 | Service | Config | Cost |
 |---------|--------|------|
 | NAT Gateway | 1x | ~$35 |
-| EC2 (Jenkins) | 1x t2.medium | ~$15 |
+| EC2 (Jenkins) | 1x t3.medium | ~$30 |
 | RDS MySQL | db.t3.micro, single-AZ, 20GB | ~$15 |
 | EKS Control Plane | 1 cluster | $73 |
 | EKS Workers | 2x t3.small | ~$30 |

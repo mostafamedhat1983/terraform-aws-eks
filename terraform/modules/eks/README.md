@@ -78,9 +78,14 @@ module "eks" {
   - Jenkins access via EKS Access Entry
   - No legacy aws-auth ConfigMap needed
 
-- **Persistent Storage:**
+- **Storage:**
   - EBS CSI Driver with Pod Identity authentication
   - No OIDC provider required
+
+- **Secrets Management:**
+  - AWS Secrets Store CSI Driver with Pod Identity
+  - Environment-scoped secret access policies
+  - Mount secrets from AWS Secrets Manager as files
 
 - **Monitoring:**
   - CloudWatch logging for API, audit, authenticator
@@ -95,3 +100,7 @@ module "eks" {
 - EBS CSI Driver role (via role module)
 - Pod Identity Association for EBS CSI
 - EBS CSI Driver addon
+- AWS Secrets Store CSI Driver addon
+- Secrets Store CSI Driver role (via role module)
+- Pod Identity Association for Secrets Store CSI
+- IAM policy for environment-scoped secret access
