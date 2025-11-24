@@ -192,7 +192,7 @@ resource "aws_eks_addon" "ebs_csi_driver" {
 # Install Secrets Store CSI Driver addon
 resource "aws_eks_addon" "secrets_store_csi_driver" {
   cluster_name = aws_eks_cluster.this.name
-  addon_name   = "aws-secrets-manager-csi-driver"
+  addon_name   = "aws-secrets-store-csi-driver-provider"
 
   depends_on = [
     aws_eks_addon.pod_identity_agent
