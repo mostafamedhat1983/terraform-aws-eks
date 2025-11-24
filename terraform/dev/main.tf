@@ -1,3 +1,8 @@
+# ========================================
+# Data Sources
+# ========================================
+# Fetches latest Jenkins AMI built by Packer
+
 data "aws_ami" "jenkins" {
   most_recent = true
   owners      = ["self"]
@@ -7,6 +12,12 @@ data "aws_ami" "jenkins" {
     values = ["jenkins-*"]
   }
 }
+
+# ========================================
+# Network Infrastructure
+# ========================================
+# VPC with public/private subnets across 2 AZs
+# Dev: 1 NAT Gateway (cost optimization)
 
 module "network" {
   source = "../modules/network"
@@ -23,6 +34,12 @@ module "network" {
   eks_cluster_security_group_id  = module.eks.cluster_security_group_id
 }
 
+# ========================================
+# Jenkins EC2 Instances
+# ========================================
+# Jenkins controller in private subnet
+# Uses Packer-built AMI with pre-installed tools
+
 module "ec2" {
   source                 = "../modules/ec2"
   for_each               = var.ec2_config
@@ -35,6 +52,12 @@ module "ec2" {
   iam_instance_profile   = module.jenkins_role.instance_profile_name
 }
 
+# ========================================
+# Jenkins IAM Policies
+# ========================================
+# Permissions for Jenkins to access EKS and AWS Bedrock
+
+# Allow Jenkins to describe EKS cluster (for kubectl commands)
 resource "aws_iam_policy" "jenkins_eks" {
   name        = "jenkins-eks-access-dev"
   description = "Allow Jenkins to describe EKS clusters for deployment"
@@ -48,6 +71,7 @@ resource "aws_iam_policy" "jenkins_eks" {
   })
 }
 
+# Allow Jenkins to invoke AWS Bedrock models (for AI chatbot)
 resource "aws_iam_policy" "jenkins_bedrock" {
   name        = "jenkins-bedrock-access-dev"
   description = "Allow Jenkins to invoke AWS Bedrock models for chatbot deployment"
