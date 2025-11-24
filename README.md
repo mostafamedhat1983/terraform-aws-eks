@@ -16,7 +16,7 @@ Production-ready AWS infrastructure built from scratch for deploying containeriz
 This repository provides the **infrastructure foundation** for the AWS EKS platform. It provisions AWS resources (VPC, EKS, RDS, networking, security) and prepares the cluster for application deployments. Application code, CI/CD pipelines, and Kubernetes manifests live in separate repositories, following platform engineering best practices.
 
 ## 🎯 Project Overview
-<img width="1042" height="812" alt="infra (1)" src="https://github.com/user-attachments/assets/f9134293-023b-45a3-903a-a18208fe532b" />
+![Diagram 2](https://github.com/user-attachments/assets/2a8f04c1-b54a-47af-9782-7af2481a47ec)# AWS EKS Infrastructure with Terraform
 
 
 
