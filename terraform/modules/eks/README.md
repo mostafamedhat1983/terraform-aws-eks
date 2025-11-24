@@ -1,6 +1,6 @@
 # EKS Module
 
-Creates complete EKS cluster with managed node group, OIDC provider for IRSA, KMS encryption for secrets, and Jenkins access configuration.
+Creates a complete EKS cluster with a managed node group, KMS encryption for secrets, and Jenkins access configuration.
 
 ## Usage
 
@@ -60,7 +60,6 @@ module "eks" {
 | cluster_arn | EKS cluster ARN |
 | node_group_id | EKS node group ID |
 | node_group_status | EKS node group status |
-| oidc_provider_arn | ARN of the OIDC provider for IRSA |
 
 ## Features
 
@@ -76,18 +75,32 @@ module "eks" {
   - Configurable min/max/desired capacity
 
 - **Access Management:**
-  - OIDC provider for IRSA (IAM Roles for Service Accounts)
   - Jenkins access via EKS Access Entry
   - No legacy aws-auth ConfigMap needed
 
+- **Storage:**
+  - EBS CSI Driver with Pod Identity authentication
+  - No OIDC provider required
+
+- **Secrets Management:**
+  - AWS Secrets Store CSI Driver with Pod Identity
+  - Environment-scoped secret access policies
+  - Mount secrets from AWS Secrets Manager as files
+
 - **Monitoring:**
-  - CloudWatch logging for API, audit, authenticator, controllerManager, scheduler
+  - CloudWatch logging for API, audit, authenticator
 
 ## Resources Created
 
 - EKS Cluster
 - EKS Managed Node Group
 - KMS key for secrets encryption
-- OIDC Identity Provider
-- CloudWatch log group
 - EKS Access Entry for Jenkins
+- Pod Identity Agent addon
+- EBS CSI Driver role (via role module)
+- Pod Identity Association for EBS CSI
+- EBS CSI Driver addon
+- AWS Secrets Store CSI Driver addon
+- Secrets Store CSI Driver role (via role module)
+- Pod Identity Association for Secrets Store CSI
+- IAM policy for environment-scoped secret access

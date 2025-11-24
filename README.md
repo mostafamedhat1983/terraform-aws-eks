@@ -11,6 +11,10 @@
 
 Production-ready AWS infrastructure built from scratch for deploying containerized applications on EKS. Demonstrates real-world DevOps practices, security hardening, and infrastructure as code principles.
 
+## 📦 Repository Scope
+
+This repository provides the **infrastructure foundation** for the AWS EKS platform. It provisions AWS resources (VPC, EKS, RDS, networking, security) and prepares the cluster for application deployments. Application code, CI/CD pipelines, and Kubernetes manifests live in separate repositories, following platform engineering best practices.
+
 ## 🎯 Project Overview
 <img width="1042" height="812" alt="infra (1)" src="https://github.com/user-attachments/assets/f9134293-023b-45a3-903a-a18208fe532b" />
 
@@ -60,10 +64,11 @@ Two complete environments:
 
 **Modern AWS Features:**
 - S3 Native State Locking (2024) - `use_lockfile = true` instead of DynamoDB
-- EKS Access Entry API (2023) - `authentication_mode = "API"` instead of aws-auth ConfigMap
+- EKS Access Entry API (2023) - For user/role access, replacing the legacy `aws-auth` ConfigMap
+- EKS Pod Identity (2023) - For EBS CSI Driver authentication, simpler than OIDC/IRSA
 - ECR with IAM Authentication - no Docker Hub credentials needed
 - Secrets Manager bidirectional integration - Terraform reads and updates secrets
-- Flexible IAM Role Module - single module reused for EC2 and EKS by changing `service` parameter
+- Flexible IAM Role Module - single module reused for EC2, EKS, and Pod Identity by changing `service` parameter
 
 **Intentional Design Decisions:**
 - Packer-built AMI for consistency (not AWS "latest" AMI)
@@ -145,6 +150,7 @@ Using latest stable versions of all tools. Vulnerabilities exist in upstream pre
 - ✅ Secrets Manager for database credentials
 - ✅ KMS key rotation enabled for EKS secrets encryption
 - ✅ S3 state versioning enabled
+- ✅ AWS Secrets Store CSI Driver for mounting secrets from Secrets Manager
 
 **Zero Secret Exposure:**
 - RDS credentials in Secrets Manager (encrypted with KMS)
@@ -169,7 +175,21 @@ Using latest stable versions of all tools. Vulnerabilities exist in upstream pre
 ### RDS Configuration
 **Dev:** Single-AZ, 20GB, 1-day backups, db.t3.micro, skip_final_snapshot
 
-**Prod:** Multi-AZ, 50GB, 7-day backups, db.t3.small, final snapshot enabled
+**Prod:** Multi-AZ, 50GB, 7-day backups, db.t3.small, timestamped final snapshots (prevents destroy conflicts)
+
+### EKS Storage & Secrets Management
+The cluster includes two CSI drivers using EKS Pod Identity authentication:
+
+**EBS CSI Driver** - Persistent storage capabilities:
+- **Jenkins Agent Workspaces:** Persistent filesystem for code checkout, dependency caching, and build artifacts
+- **Future-Proofing:** Enables stateful applications (Prometheus, message queues, databases) without infrastructure changes
+
+**AWS Secrets Store CSI Driver** - Secrets management:
+- **Application Secrets:** Mount secrets from AWS Secrets Manager as files in pods
+- **Database Credentials:** Secure access to RDS credentials without hardcoding
+- **Environment-Scoped Access:** IAM policies restrict access to environment-specific secrets (dev/prod)
+
+**Authentication:** Both drivers use EKS Pod Identity with IAM roles created via the role module (`service = "pods.eks.amazonaws.com"`), eliminating OIDC provider complexity.
 
 ### EKS Configuration
 **Dev:** 2x t3.small nodes (desired: 2, min: 1, max: 3), 20GB disk
@@ -266,7 +286,7 @@ aws eks update-kubeconfig --name platform-dev --region us-east-2
 | Service | Config | Cost |
 |---------|--------|------|
 | NAT Gateway | 1x | ~$35 |
-| EC2 (Jenkins) | 1x t2.medium | ~$15 |
+| EC2 (Jenkins) | 1x t3.medium | ~$30 |
 | RDS MySQL | db.t3.micro, single-AZ, 20GB | ~$15 |
 | EKS Control Plane | 1 cluster | $73 |
 | EKS Workers | 2x t3.small | ~$30 |

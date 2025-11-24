@@ -1,3 +1,8 @@
+# ========================================
+# Data Sources
+# ========================================
+# Fetches latest Jenkins AMI built by Packer
+
 data "aws_ami" "jenkins" {
   most_recent = true
   owners      = ["self"]
@@ -7,6 +12,12 @@ data "aws_ami" "jenkins" {
     values = ["jenkins-*"]
   }
 }
+
+# ========================================
+# Network Infrastructure
+# ========================================
+# VPC with public/private subnets across 2 AZs
+# Prod: 2 NAT Gateways (high availability)
 
 module "network" {
   source = "../modules/network"
@@ -23,6 +34,13 @@ module "network" {
   eks_cluster_security_group_id = module.eks.cluster_security_group_id
 }
 
+# ========================================
+# Jenkins EC2 Instances
+# ========================================
+# Jenkins controller in private subnet
+# Uses Packer-built AMI with pre-installed tools
+# Prod: t3.medium for better performance
+
 module "ec2" {
   source                 = "../modules/ec2"
   for_each               = var.ec2_config
@@ -35,6 +53,12 @@ module "ec2" {
   iam_instance_profile   = module.jenkins_role.instance_profile_name
 }
 
+# ========================================
+# Jenkins IAM Policies
+# ========================================
+# Permissions for Jenkins to access EKS and AWS Bedrock
+
+# Allow Jenkins to describe EKS cluster (for kubectl commands)
 resource "aws_iam_policy" "jenkins_eks" {
   name        = "jenkins-eks-access-prod"
   description = "Allow Jenkins to describe EKS clusters for deployment"
@@ -48,6 +72,7 @@ resource "aws_iam_policy" "jenkins_eks" {
   })
 }
 
+# Allow Jenkins to invoke AWS Bedrock models (for AI chatbot)
 resource "aws_iam_policy" "jenkins_bedrock" {
   name        = "jenkins-bedrock-access-prod"
   description = "Allow Jenkins to invoke AWS Bedrock models for chatbot deployment"
@@ -61,6 +86,12 @@ resource "aws_iam_policy" "jenkins_bedrock" {
   })
 }
 
+# ========================================
+# IAM Roles
+# ========================================
+# IAM roles for Jenkins, EKS cluster, and EKS nodes
+
+# Jenkins EC2 instance role (SSM, ECR, EKS, Bedrock access)
 module "jenkins_role" {
   source = "../modules/role"
   name   = "ec2-ssm-ecr-role-prod"
@@ -72,6 +103,7 @@ module "jenkins_role" {
   ]
 }
 
+# EKS cluster service role
 module "eks_cluster_role" {
   source  = "../modules/role"
   name    = "EKS-cluster-role-prod"
@@ -81,6 +113,7 @@ module "eks_cluster_role" {
   ]
 }
 
+# EKS worker nodes role
 module "eks_node_role" {
   source = "../modules/role"
   name   = "EKS-node-role-prod"
@@ -90,6 +123,12 @@ module "eks_node_role" {
     "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
   ]
 }
+
+# ========================================
+# RDS Database
+# ========================================
+# MySQL database for application data
+# Prod: Multi-AZ, 50GB storage, 7-day backups, timestamped final snapshot
 
 module "rds" {
   source = "../modules/rds"
@@ -114,22 +153,30 @@ module "rds" {
   multi_az                  = true
   backup_retention_period   = 7
   skip_final_snapshot       = false
-  final_snapshot_identifier = "platform-db-prod-final-snapshot"
+  final_snapshot_identifier = "platform-db-prod-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
 
   tags = {
     Name = "platform-db-prod"
   }
 }
 
+# ========================================
+# EKS Cluster
+# ========================================
+# Kubernetes cluster for running containerized applications
+# Prod: 3x t3.medium nodes (min: 2, max: 5), 30GB disk
+# Private endpoint only (accessed via Jenkins using SSM)
+
 module "eks" {
   source = "../modules/eks"
-
-  cluster_name     = "platform-prod"
-  cluster_role_arn = module.eks_cluster_role.role_arn
-  node_role_arn    = module.eks_node_role.role_arn
-  jenkins_role_arn = module.jenkins_role.role_arn
-  cluster_version  = "1.34"
-
+  
+  cluster_name        = "platform-prod"
+  environment         = "prod"
+  cluster_role_arn    = module.eks_cluster_role.role_arn
+  node_role_arn       = module.eks_node_role.role_arn
+  jenkins_role_arn    = module.jenkins_role.role_arn
+  cluster_version     = "1.34"
+  
   subnet_ids = [
     module.network.private_subnet_ids["eks-2a"],
     module.network.private_subnet_ids["eks-2b"]
@@ -146,7 +193,11 @@ module "eks" {
   disk_size         = 30
 }
 
-# Parameter Store for RDS endpoint
+# ========================================
+# SSM Parameter Store
+# ========================================
+# Stores RDS endpoint for application configuration
+
 resource "aws_ssm_parameter" "rds_endpoint" {
   name  = "rds-prod-endpoint"
   type  = "String"
