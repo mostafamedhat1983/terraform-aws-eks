@@ -72,3 +72,12 @@ variable "jenkins_role_arn" {
   description = "ARN of the Jenkins IAM role for EKS access"
   type        = string
 }
+
+variable "environment" {
+  description = "Environment name (dev or prod) for secret access scoping"
+  type        = string
+  validation {
+    condition     = contains(["dev", "prod"], var.environment)
+    error_message = "Environment must be either 'dev' or 'prod'."
+  }
+}

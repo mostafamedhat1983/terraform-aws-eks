@@ -169,7 +169,9 @@ module "rds" {
 
 module "eks" {
   source = "../modules/eks"
+  
   cluster_name        = "platform-prod"
+  environment         = "prod"
   cluster_role_arn    = module.eks_cluster_role.role_arn
   node_role_arn       = module.eks_node_role.role_arn
   jenkins_role_arn    = module.jenkins_role.role_arn
