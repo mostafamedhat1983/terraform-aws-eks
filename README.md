@@ -11,64 +11,6 @@
 
 Production-ready AWS infrastructure managing **50+ cloud resources** across **2 environments** with **full CI/CD automation**. Built from scratch over **3 months** to demonstrate enterprise-grade DevOps practices, modern AWS services (2023-2024), security hardening, and infrastructure as code principles. Every line of infrastructure code written, debugged, and deployed hands-on.
 
-## 🎯 Skills Demonstrated
-
-**Cloud & Infrastructure:**
-- AWS Cloud Architecture (VPC, Subnets, Route Tables, Security Groups, NAT Gateway, Internet Gateway)
-- Amazon EKS (Elastic Kubernetes Service) - cluster management, node groups, control plane configuration
-- Amazon RDS (Relational Database Service) - MySQL, Multi-AZ, automated backups, encryption
-- Amazon EC2 (Elastic Compute Cloud) - instance management, EBS volumes, SSM Session Manager
-- AWS IAM (Identity and Access Management) - roles, policies, least privilege access, service principals
-- AWS Secrets Manager - secret rotation, KMS encryption, secrets lifecycle management
-- Amazon ECR (Elastic Container Registry) - Docker image management
-- AWS KMS (Key Management Service) - encryption key management, key rotation
-
-**Infrastructure as Code (IaC):**
-- Terraform - modules, state management, workspaces, remote backends, S3 native locking
-- HashiCorp Configuration Language (HCL)
-- Infrastructure modularization and reusability
-- State file management and locking strategies
-
-**Container Orchestration & Kubernetes:**
-- Kubernetes architecture and resource management
-- EKS Pod Identity (modern IRSA alternative)
-- Kubernetes CSI Drivers (EBS CSI, AWS Secrets Store CSI)
-- Container networking and storage
-- Docker containerization
-- Helm package management
-
-**Configuration Management & Automation:**
-- Packer - AMI automation and image building
-- Ansible - configuration management, idempotent playbooks, native modules
-- Jenkins - CI/CD pipeline orchestration, Kubernetes plugin
-- Infrastructure automation and immutable infrastructure patterns
-
-**Security & Compliance:**
-- Zero-trust security architecture
-- Encryption at rest and in transit (KMS, TLS)
-- Network isolation and private subnets
-- Security group and NACL configuration
-- Vulnerability scanning (Trivy)
-- Secrets management and rotation
-- IAM least privilege access patterns
-- AWS security best practices and compliance
-
-**DevOps Practices:**
-- CI/CD pipeline design and implementation
-- Infrastructure automation and orchestration
-- Multi-environment deployment strategies (dev/prod)
-- Cost optimization and resource right-sizing
-- Monitoring and logging (CloudWatch)
-- Disaster recovery and high availability design
-
-**Technical Skills:**
-- Linux system administration (Amazon Linux 2023)
-- Bash scripting and automation
-- Git version control
-- Documentation and technical writing
-- Problem-solving and debugging
-- Architecture design and decision-making
-
 ## 📦 Repository Scope
 
 This repository provides the **infrastructure foundation** for the AWS EKS platform. It provisions AWS resources (VPC, EKS, RDS, networking, security) and prepares the cluster for application deployments. Application code, CI/CD pipelines, and Kubernetes manifests live in separate repositories, following platform engineering best practices.
@@ -83,14 +25,14 @@ Every line of code was written with intention, reviewed, debugged, and improved 
 ## 🏗️ Architecture
 
 Two complete environments:  
-**Development**  (~$180/month)  
-**Production**  ( ~$340/month).
+**Development** (~$177/month)  
+**Production** (~$294/month)
 
 ### Development Environment
 **Cost-optimized for learning:**
 - **VPC:** 2 AZs, 8 subnets (2 public, 6 private)
 - **Compute:** 1x Jenkins Controller EC2 (t3.medium)
-- **Database:** RDS MySQL 8.0 (single-AZ, 20GB, encrypted)
+- **Database:** RDS MySQL 8.0 (db.t3.micro, single-AZ, 20GB, encrypted)
 - **Kubernetes:** EKS 1.34 with 2x t3.small nodes (20GB disk)
 - **Networking:** 1 NAT Gateway
 - **Registry:** ECR for Docker images
@@ -100,7 +42,7 @@ Two complete environments:
 **High availability and performance:**
 - **VPC:** Same architecture for consistency
 - **Compute:** 1x Jenkins Controller EC2 (t3.medium)
-- **Database:** RDS MySQL 8.0 (Multi-AZ, 50GB, 7-day backups, encrypted)
+- **Database:** RDS MySQL 8.0 (db.t3.small, Multi-AZ, 50GB, 7-day backups, encrypted)
 - **Kubernetes:** EKS 1.34 with 3x t3.medium nodes (30GB disk)
 - **Networking:** 2 NAT Gateways (one per AZ)
 - **Registry:** Shared ECR (different tags per environment)
@@ -129,6 +71,17 @@ Two complete environments:
 - Descriptive naming (replaced numeric keys with "jenkins-2a", "eks-2a", "rds-2a")
 - Dynamic configuration (no hardcoded AZs or values)
 - Full variable documentation
+
+## 🛠️ Technologies & Skills
+
+**Core Stack:** AWS (EKS, RDS, EC2, VPC, IAM, Secrets Manager, ECR, KMS) • Terraform • Kubernetes • Docker • Packer • Ansible • Jenkins • MySQL
+
+**Key Capabilities:**
+- **Infrastructure as Code:** Terraform modules, state management, S3 native locking, multi-environment deployments
+- **Container Orchestration:** EKS cluster management, Pod Identity, CSI Drivers (EBS, Secrets Store), Kubernetes resource management
+- **CI/CD & Automation:** Jenkins pipeline orchestration, Packer AMI builds, Ansible configuration management, immutable infrastructure
+- **Security:** Zero-trust architecture, encryption (KMS), IAM least privilege, Secrets Manager rotation, vulnerability scanning (Trivy), SSM Session Manager
+- **Cloud Architecture:** Multi-AZ design, high availability, network isolation, cost optimization, disaster recovery planning
 
 ## 📁 Project Structure
 
@@ -195,9 +148,38 @@ Every architecture decision made through research and understanding of tradeoffs
 
 ## 🚀 Deployment
 
-**Prerequisites:** AWS CLI, Terraform >= 1.0, S3 bucket for state, Secrets Manager secrets
+**Prerequisites:** 
+- AWS CLI configured with appropriate credentials and access to us-east-2 region
+- Terraform >= 1.0
+- Packer >= 1.8 (for AMI builds)
+- Ansible >= 2.9 (for provisioning)
+- S3 bucket for Terraform state storage with versioning enabled
+- ECR repository created (for Docker images)
 
-**1. Create RDS Secrets:**
+**0. Create S3 Bucket for Terraform State:**
+```bash
+# Create S3 bucket for state storage (update bucket name to be unique)
+aws s3 mb s3://your-terraform-state-bucket --region us-east-2
+
+# Enable versioning for state recovery
+aws s3api put-bucket-versioning \
+  --bucket your-terraform-state-bucket \
+  --versioning-configuration Status=Enabled \
+  --region us-east-2
+
+# Update backend.tf files with your bucket name
+# terraform/dev/backend.tf and terraform/prod/backend.tf
+```
+
+**1. Create ECR Repository:**
+```bash
+# Create ECR repository for Docker images
+aws ecr create-repository \
+  --repository-name platform-app \
+  --region us-east-2
+```
+
+**2. Create RDS Secrets:**
 ```bash
 # Dev
 aws secretsmanager create-secret \
@@ -212,14 +194,16 @@ aws secretsmanager create-secret \
   --region us-east-2
 ```
 
-**2. Build Jenkins AMI:**
+**3. Build Jenkins AMI:**
 ```bash
 cd packer
 packer init jenkins.pkr.hcl
 packer build jenkins.pkr.hcl  # Includes Ansible provisioning and Trivy scanning
+# Note: AMI ID will be saved to manifest.json
 ```
 
-**3. Deploy Infrastructure:**
+**4. Deploy Infrastructure:**
+
 ```bash
 cd terraform/dev  # or terraform/prod
 terraform init
@@ -227,20 +211,34 @@ terraform plan    # Review changes before applying
 terraform apply
 ```
 
-**4. Configure kubectl:**
+**5. Access Jenkins and Configure kubectl:**
+
 ```bash
-aws ssm start-session --target <jenkins-instance-id>
+# Connect to Jenkins EC2 instance via SSM (no SSH keys needed)
+aws ssm start-session --target <jenkins-instance-id> --region us-east-2
+
+# Once connected, configure kubectl for EKS access
 aws eks update-kubeconfig --name platform-dev --region us-east-2
+
+# Verify cluster access
+kubectl get nodes
 ```
 
-**Timing:** Packer build ~10-15 min, first Terraform apply ~20-25 min, updates 2-5 min
+**Timing:**
+
+- S3 bucket creation: ~1 min
+- ECR repository creation: ~1 min
+- Secrets creation: ~1 min
+- Packer AMI build: ~10-15 min
+- First Terraform apply: ~20-25 min
+- Subsequent updates: ~2-5 min
 
 ## 📊 Cost Analysis
 
-**Development:** ~$165/month (cost-optimized for learning)  
-**Production:** ~$310/month (high availability and performance)
+**Development:** ~$177/month (cost-optimized for learning)  
+**Production:** ~$294/month (high availability and performance)
 
-Strategic cost vs security tradeoffs learned through hands-on experimentation.
+Strategic cost vs security tradeoffs learned through hands-on experimentation. Pricing based on us-east-2 region (2025).
 
 [View detailed cost breakdown →](docs/cost-breakdown.md)
 
