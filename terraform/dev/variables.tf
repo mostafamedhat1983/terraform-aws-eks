@@ -1,3 +1,8 @@
+# ========================================
+# Development Environment Variables
+# ========================================
+# Subnet configurations, EC2 instance types, and resource naming for dev environment
+
 variable "subnet_config" {
   type = map(object({
     cidr_block        = string

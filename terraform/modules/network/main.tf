@@ -66,10 +66,13 @@ resource "aws_internet_gateway" "this" {
 # Dev: 1 NAT Gateway (cost optimization ~$35/month savings)
 # Prod: 2 NAT Gateways (high availability across AZs)
 
+# Dynamic subnet selection: Pick first subnet if count=1, otherwise use all
 locals {
   nat_subnets = var.nat_gateway_count == 1 ? {
     for k, v in var.public_subnets : k => v if k == keys(var.public_subnets)[0]
   } : var.public_subnets
+  
+  # Cache first NAT key for dev routing (all traffic through one NAT)
   first_nat_key = keys(local.nat_subnets)[0]
 }
 
@@ -129,6 +132,7 @@ resource "aws_route_table" "private" {
   for_each = var.private_subnets
   vpc_id   = aws_vpc.this.id
 
+  # Conditional routing: Single NAT (dev) vs per-AZ NAT (prod)
   route {
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = var.nat_gateway_count == 1 ? aws_nat_gateway.this[local.first_nat_key].id : aws_nat_gateway.this[each.value.availability_zone].id

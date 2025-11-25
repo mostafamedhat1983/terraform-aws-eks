@@ -1,3 +1,8 @@
+# ========================================
+# Terraform & Provider Configuration
+# ========================================
+# AWS provider v5.x pinned for stability
+
 terraform {
   required_providers {
     aws = {
@@ -7,9 +12,7 @@ terraform {
   }
 }
 
-
-
-
+# Default tags applied to all resources for governance and cost tracking
 provider "aws" {
   region = "us-east-2"
 
