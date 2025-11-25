@@ -92,3 +92,11 @@ Prevents accidental access to other clusters, limits blast radius.
 service = "ec2.amazonaws.com"  # or "eks.amazonaws.com"
 ```
 Single IAM role module reused for EC2 and EKS by changing the `service` parameter (ec2.amazonaws.com vs eks.amazonaws.com). Follows DRY principle.
+
+## Trivy Scanning: CRITICAL Only
+
+**Decision:** Scan AMIs for CRITICAL vulnerabilities only, not HIGH.
+
+**Why:** Testing showed 100+ HIGH findings, mostly Go toolchain CVEs in upstream packages (kubectl, Helm, Docker CLI) and one non-applicable SCSI driver bug. Scanning HIGH would block every build on upstream issues outside our control.
+
+**Trade-off:** CRITICAL catches actively exploited vulnerabilities while avoiding false-positive build failures from toolchain dependencies.

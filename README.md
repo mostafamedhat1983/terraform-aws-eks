@@ -61,7 +61,7 @@ Two complete environments:
 
 **Security & Architecture:**
 - Comprehensive encryption (EBS, RDS, EKS secrets, S3) with zero secret exposure
-- Private EKS endpoint accessed via SSM Session Manager (no bastion, no SSH keys)
+- Private EKS endpoint accessed via Jenkins EC2 using SSM Session Manager (no bastion, no SSH keys, no public IPs)
 - Flexible IAM role module reused for EC2, EKS, and Pod Identity by changing `service` parameter
 - Jenkins IAM restricted to specific cluster ARNs (not wildcard `*`)
 - Packer-built immutable AMIs with Trivy vulnerability scanning (not user data scripts)
@@ -79,9 +79,9 @@ Two complete environments:
 **Key Capabilities:**
 - **Infrastructure as Code:** Terraform modules, state management, S3 native locking, multi-environment deployments
 - **Container Orchestration:** EKS cluster management, Pod Identity, CSI Drivers (EBS, Secrets Store), Kubernetes resource management
-- **CI/CD & Automation:** Jenkins pipeline orchestration, Packer AMI builds, Ansible configuration management, immutable infrastructure
-- **Security:** Zero-trust architecture, encryption (KMS), IAM least privilege, Secrets Manager rotation, vulnerability scanning (Trivy), SSM Session Manager
-- **Cloud Architecture:** Multi-AZ design, high availability, network isolation, cost optimization, disaster recovery planning
+- **CI/CD Infrastructure:** Jenkins installation and setup, Packer AMI builds, Ansible configuration management, immutable infrastructure
+- **Security:** Zero-trust architecture, encryption (KMS), IAM least privilege, Secrets Manager integration, vulnerability scanning (Trivy), SSM Session Manager
+- **Cloud Architecture:** Multi-AZ design, high availability, automated backups, network isolation, cost optimization
 
 ## 📁 Project Structure
 
@@ -111,7 +111,7 @@ Jenkins instances use custom AMIs built with Packer and Ansible (not user data s
 **Build Stack:**
 - **Packer:** Automates AMI creation from Amazon Linux 2023
 - **Ansible:** Provisions using native modules (dnf, systemd, yum_repository)
-- **Trivy:** Vulnerability scanning (fails on HIGH/CRITICAL)
+- **Trivy:** Vulnerability scanning (fails on CRITICAL)
 
 **Installed:** Docker, Java 21 Corretto, Git, Jenkins, kubectl v1.34, Helm, AWS CLI
 

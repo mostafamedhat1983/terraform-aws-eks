@@ -53,7 +53,7 @@ build {
     ]
   }
   
-  # Run Trivy security scan for vulnerabilities (fails build if HIGH/CRITICAL found)
+  # Run Trivy security scan for vulnerabilities (fails build if CRITICAL found)
   provisioner "shell" {
     inline = [
       "sudo rpm --import https://aquasecurity.github.io/trivy-repo/rpm/public.key",

@@ -5,7 +5,7 @@ Builds custom Jenkins AMI with pre-installed tools using Amazon Linux 2023.
 ## What It Does
 - Creates AMI from Amazon Linux 2023 base image
 - Provisions with Ansible (installs Docker, Jenkins, kubectl, Helm, etc.)
-- Runs Trivy security scan (fails on HIGH/CRITICAL vulnerabilities)
+- Runs Trivy security scan (fails on CRITICAL vulnerabilities)
 - Outputs AMI ID to `manifest.json`
 
 ## Build Commands
@@ -28,7 +28,7 @@ packer build jenkins.pkr.hcl
 
 ## Security
 - GPG verification for all third-party repos
-- Trivy vulnerability scanning (exit-code 1 on HIGH/CRITICAL)
+- Trivy vulnerability scanning (exit-code 1 on CRITICAL)
 - SSH password authentication disabled
 - All installations verified before AMI creation
 

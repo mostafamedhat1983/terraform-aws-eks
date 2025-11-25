@@ -20,7 +20,9 @@ Comprehensive security implementation across all layers of the infrastructure.
 - RDS credentials in Secrets Manager (encrypted with KMS)
 - Secrets created manually outside Terraform
 - Terraform reads via `data` source (no plaintext)
-- Passwords never in Git, code, state files, logs, or images
+- AWS Secrets Store CSI Driver mounts secrets as files in pods (no environment variables)
+- Secrets encrypted in transit and at rest in EKS (KMS encryption with automatic rotation)
+- Passwords never in Git, code, state files, logs, or container images
 - S3 versioning + native locking + encryption for state files
 
 ## Network Security
