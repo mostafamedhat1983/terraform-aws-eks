@@ -27,6 +27,9 @@ Potential improvements and features for future iterations.
 - [ ] AWS Backup automation
 - [ ] Cross-region disaster recovery
 
+### Network Optimization
+- [ ] Regional NAT Gateway (released Nov 19, 2025, not yet supported in Terraform) - Single NAT that automatically scales across AZs, reduces data transfer costs, eliminates public subnet requirement, and simplifies management
+
 ### Code Quality Tools
 - [ ] pre-commit hooks
 - [ ] tflint (best practices)
