@@ -9,7 +9,65 @@
 ![Jenkins](https://img.shields.io/badge/jenkins-%232C5263.svg?style=for-the-badge&logo=jenkins&logoColor=white)
 ![MySQL](https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)
 
-Production-ready AWS infrastructure built from scratch for deploying containerized applications on EKS. Demonstrates real-world DevOps practices, security hardening, and infrastructure as code principles.
+Production-ready AWS infrastructure managing **50+ cloud resources** across **2 environments** with **full CI/CD automation**. Built from scratch over **3 months** to demonstrate enterprise-grade DevOps practices, modern AWS services (2023-2024), security hardening, and infrastructure as code principles. Every line of infrastructure code written, debugged, and deployed hands-on.
+
+## 🎯 Skills Demonstrated
+
+**Cloud & Infrastructure:**
+- AWS Cloud Architecture (VPC, Subnets, Route Tables, Security Groups, NAT Gateway, Internet Gateway)
+- Amazon EKS (Elastic Kubernetes Service) - cluster management, node groups, control plane configuration
+- Amazon RDS (Relational Database Service) - MySQL, Multi-AZ, automated backups, encryption
+- Amazon EC2 (Elastic Compute Cloud) - instance management, EBS volumes, SSM Session Manager
+- AWS IAM (Identity and Access Management) - roles, policies, least privilege access, service principals
+- AWS Secrets Manager - secret rotation, KMS encryption, secrets lifecycle management
+- Amazon ECR (Elastic Container Registry) - Docker image management
+- AWS KMS (Key Management Service) - encryption key management, key rotation
+
+**Infrastructure as Code (IaC):**
+- Terraform - modules, state management, workspaces, remote backends, S3 native locking
+- HashiCorp Configuration Language (HCL)
+- Infrastructure modularization and reusability
+- State file management and locking strategies
+
+**Container Orchestration & Kubernetes:**
+- Kubernetes architecture and resource management
+- EKS Pod Identity (modern IRSA alternative)
+- Kubernetes CSI Drivers (EBS CSI, AWS Secrets Store CSI)
+- Container networking and storage
+- Docker containerization
+- Helm package management
+
+**Configuration Management & Automation:**
+- Packer - AMI automation and image building
+- Ansible - configuration management, idempotent playbooks, native modules
+- Jenkins - CI/CD pipeline orchestration, Kubernetes plugin
+- Infrastructure automation and immutable infrastructure patterns
+
+**Security & Compliance:**
+- Zero-trust security architecture
+- Encryption at rest and in transit (KMS, TLS)
+- Network isolation and private subnets
+- Security group and NACL configuration
+- Vulnerability scanning (Trivy)
+- Secrets management and rotation
+- IAM least privilege access patterns
+- AWS security best practices and compliance
+
+**DevOps Practices:**
+- CI/CD pipeline design and implementation
+- Infrastructure automation and orchestration
+- Multi-environment deployment strategies (dev/prod)
+- Cost optimization and resource right-sizing
+- Monitoring and logging (CloudWatch)
+- Disaster recovery and high availability design
+
+**Technical Skills:**
+- Linux system administration (Amazon Linux 2023)
+- Bash scripting and automation
+- Git version control
+- Documentation and technical writing
+- Problem-solving and debugging
+- Architecture design and decision-making
 
 ## 📦 Repository Scope
 
@@ -50,30 +108,27 @@ Two complete environments:
 
 ## 🛠️ What Makes This Different
 
-**Security Hardening:**
-- EBS, RDS, and EKS secrets encryption
-- Private EKS endpoint, accessed via Jenkins EC2 using SSM
-- EKS audit logging enabled
-- Jenkins IAM restricted to specific cluster ARNs (not wildcard)
+**Built from scratch, not copied** - Every decision researched, debugged, and implemented through hands-on learning.
+
+**Modern AWS Features (2023-2024):**
+- **S3 Native State Locking (2024)** - `use_lockfile = true` instead of legacy DynamoDB approach
+- **EKS Access Entry API (2023)** - Modern user/role access management, replacing deprecated `aws-auth` ConfigMap
+- **EKS Pod Identity (2023)** - Simpler authentication for CSI drivers, eliminating OIDC/IRSA complexity
+- **Dual CSI Driver Setup** - EBS CSI for persistent storage + AWS Secrets Store CSI for mounting secrets from Secrets Manager directly into pods
+- **ECR with IAM Authentication** - No Docker Hub credentials or rate limits
+
+**Security & Architecture:**
+- Comprehensive encryption (EBS, RDS, EKS secrets, S3) with zero secret exposure
+- Private EKS endpoint accessed via SSM Session Manager (no bastion, no SSH keys)
+- Flexible IAM role module reused for EC2, EKS, and Pod Identity by changing `service` parameter
+- Jenkins IAM restricted to specific cluster ARNs (not wildcard `*`)
+- Packer-built immutable AMIs with Trivy vulnerability scanning (not user data scripts)
 
 **Code Quality:**
+- Modular design with reusable Terraform modules (network, EC2, RDS, IAM, EKS)
 - Descriptive naming (replaced numeric keys with "jenkins-2a", "eks-2a", "rds-2a")
-- Variable documentation for all modules
-- Dynamic configuration (removed hardcoded AZs)
-- Modular design (network, EC2, RDS, IAM, EKS)
-
-**Modern AWS Features:**
-- S3 Native State Locking (2024) - `use_lockfile = true` instead of DynamoDB
-- EKS Access Entry API (2023) - For user/role access, replacing the legacy `aws-auth` ConfigMap
-- EKS Pod Identity (2023) - For EBS CSI Driver authentication, simpler than OIDC/IRSA
-- ECR with IAM Authentication - no Docker Hub credentials needed
-- Secrets Manager bidirectional integration - Terraform reads and updates secrets
-- Flexible IAM Role Module - single module reused for EC2, EKS, and Pod Identity by changing `service` parameter
-
-**Intentional Design Decisions:**
-- Packer-built AMI for consistency (not AWS "latest" AMI)
-- Jenkins admin policy for cluster infrastructure management
-- Unrestricted egress (restricting requires $50-100/month VPC endpoints)
+- Dynamic configuration (no hardcoded AZs or values)
+- Full variable documentation
 
 ## 📁 Project Structure
 
@@ -122,130 +177,21 @@ packer build jenkins.pkr.hcl
 
 ## 🔒 Security Scanning
 
-**Trivy Integration:**
-AMI builds include automated vulnerability scanning with Trivy v0.67.2.
-
-**Configuration:**
-- Scans entire root filesystem
-- Fails builds only on CRITICAL severity (production best practice)
-- Generates timestamped JSON reports
-- 15-minute scan timeout
-
-**Current Status:**
-- 0 CRITICAL vulnerabilities ✅
-- 113 HIGH in latest versions of kubectl v1.34, Helm v3.16+, Jenkins LTS (outdated Go stdlib/Spring dependencies used during compilation - awaiting upstream recompilation)
-- 1 HIGH in Amazon Linux kernel (SCSI target module - not used by Jenkins)
-
-**Approach:**
-Using latest stable versions of all tools. Vulnerabilities exist in upstream pre-compiled binaries and cannot be fixed without maintainer releases. Following AWS shared responsibility model and pragmatic risk management - tracked but don't block builds.
-
-## 🔐 Security Features
-
-- ✅ All data encrypted at rest (EBS, RDS, EKS secrets, S3)
-- ✅ IAM roles with least privilege (no hardcoded credentials)
-- ✅ Private subnets for all workloads
-- ✅ Security groups with specific rules (no 0.0.0.0/0 ingress)
-- ✅ EKS control plane logging to CloudWatch
-- ✅ SSM Session Manager (no bastion host or SSH keys)
-- ✅ Secrets Manager for database credentials
-- ✅ KMS key rotation enabled for EKS secrets encryption
-- ✅ S3 state versioning enabled
-- ✅ AWS Secrets Store CSI Driver for mounting secrets from Secrets Manager
-
-**Zero Secret Exposure:**
-- RDS credentials in Secrets Manager (encrypted with KMS)
-- Secrets created manually outside Terraform
-- Terraform reads via `data` source (no plaintext)
-- Passwords never in Git, code, state files, logs, or images
-- S3 versioning + native locking + encryption for state files
-
-**Network Security:**
-- All workloads in private subnets
-- RDS not publicly accessible
-- EKS API endpoint private-only
-- NAT Gateway for controlled outbound access
+AMI builds include automated vulnerability scanning with Trivy v0.67.2. Scans entire root filesystem and fails builds on CRITICAL severity. Current status: 0 CRITICAL vulnerabilities.
 
 ## 💡 Key Technical Decisions
 
-### NAT Gateway Strategy
-**Dev:** 1 NAT in us-east-2a (~$35/month) - acceptable risk for dev
+Every architecture decision made through research and understanding of tradeoffs:
 
-**Prod:** 2 NATs (~$70/month) - high availability, no cross-AZ traffic
+- **NAT Gateway Strategy:** 1 NAT for dev (cost-optimized $35/mo), 2 NATs for prod (high availability $70/mo)
+- **EKS CSI Drivers:** EBS CSI for persistent volumes + Secrets Store CSI for mounting secrets, both using Pod Identity
+- **Jenkins Architecture:** Controller on EC2 + ephemeral agents as EKS pods (cost-effective, scalable)
+- **SSM Session Manager:** Secure access without bastion hosts, SSH keys, or public endpoints
+- **Secrets Management:** Manual creation outside Terraform ensures persistence across `terraform destroy`
+- **Immutable AMIs:** Packer + Ansible for consistency, not AWS "latest" or user data scripts
 
-### RDS Configuration
-**Dev:** Single-AZ, 20GB, 1-day backups, db.t3.micro, skip_final_snapshot
-
-**Prod:** Multi-AZ, 50GB, 7-day backups, db.t3.small, timestamped final snapshots (prevents destroy conflicts)
-
-### EKS Storage & Secrets Management
-The cluster includes two CSI drivers using EKS Pod Identity authentication:
-
-**EBS CSI Driver** - Persistent storage capabilities:
-- **Jenkins Agent Workspaces:** Persistent filesystem for code checkout, dependency caching, and build artifacts
-- **Future-Proofing:** Enables stateful applications (Prometheus, message queues, databases) without infrastructure changes
-
-**AWS Secrets Store CSI Driver** - Secrets management:
-- **Application Secrets:** Mount secrets from AWS Secrets Manager as files in pods
-- **Database Credentials:** Secure access to RDS credentials without hardcoding
-- **Environment-Scoped Access:** IAM policies restrict access to environment-specific secrets (dev/prod)
-
-**Authentication:** Both drivers use EKS Pod Identity with IAM roles created via the role module (`service = "pods.eks.amazonaws.com"`), eliminating OIDC provider complexity.
-
-### EKS Configuration
-**Dev:** 2x t3.small nodes (desired: 2, min: 1, max: 3), 20GB disk
-
-**Prod:** 3x t3.medium nodes (desired: 3, min: 2, max: 5), 30GB disk
-
-### Jenkins Architecture
-**Single Controller + EKS Agents:**
-- 1 Jenkins controller EC2 instance per environment
-- Jenkins agents run as ephemeral pods in EKS (using Kubernetes plugin)
-- Dynamic scaling based on build demand
-- Cost-effective: agents only run when needed
-
-**Why not 2 Jenkins instances?**
-Originally deployed 2 EC2 instances (controller + static agent), but switched to EKS-based agents for better resource utilization and modern CI/CD practices.
-
-### SSM Session Manager (No Bastion)
-**Benefits:** No SSH keys, no bastion maintenance, CloudWatch logging, IAM-based access, no inbound rules, saves ~$15/month
-
-**Access Jenkins:**
-```bash
-aws ssm start-session --target <jenkins-instance-id> --region us-east-2
-```
-
-**Port Forwarding:**
-```bash
-aws ssm start-session --target <jenkins-instance-id> \
-  --document-name AWS-StartPortForwardingSession \
-  --parameters '{"portNumber":["8080"],"localPortNumber":["8080"]}' \
-  --region us-east-2
-```
-
-**Note:** First SSM connection after instance launch typically takes 3-5 minutes. First boot from a new AMI may take up to 30 minutes for initial SSM Agent setup. Subsequent connections are immediate.
-
-### Secrets Management
-Manual creation outside Terraform ensures secrets persist across `terraform destroy` and never appear in code or Git.
-
-### Jenkins Per-Environment
-**Why:** Complete isolation (dev failures don't affect prod), security (prod credentials isolated), compliance, team autonomy, learning value.
-
-**Alternative:** Single Jenkins in "tools" account deploying to all environments (both approaches valid).
-
-### No .tfvars Files
-Separate folders (terraform/dev, terraform/prod) with environment-specific code is simpler for 2 environments. .tfvars makes sense for 5+ identical environments.
-
-### Jenkins IAM Least Privilege
-```hcl
-Resource = module.eks.cluster_arn  # Only its own cluster, not "*"
-```
-Prevents accidental access to other clusters, limits blast radius.
-
-### Flexible IAM Role Module
-```hcl
-service = "ec2.amazonaws.com"  # or "eks.amazonaws.com"
-```
-Single IAM role module reused for EC2 and EKS by changing the `service` parameter (ec2.amazonaws.com vs eks.amazonaws.com). Follows DRY principle.
+[View detailed architecture decisions →](docs/architecture-decisions.md)  
+[View complete security documentation →](docs/security.md)
 
 ## 🚀 Deployment
 
@@ -266,113 +212,57 @@ aws secretsmanager create-secret \
   --region us-east-2
 ```
 
-**2. Deploy:**
+**2. Build Jenkins AMI:**
 ```bash
-cd terraform/dev
+cd packer
+packer init jenkins.pkr.hcl
+packer build jenkins.pkr.hcl  # Includes Ansible provisioning and Trivy scanning
+```
+
+**3. Deploy Infrastructure:**
+```bash
+cd terraform/dev  # or terraform/prod
 terraform init
-terraform plan
+terraform plan    # Review changes before applying
 terraform apply
 ```
 
-**3. Configure kubectl:**
+**4. Configure kubectl:**
 ```bash
 aws ssm start-session --target <jenkins-instance-id>
 aws eks update-kubeconfig --name platform-dev --region us-east-2
 ```
 
-## 📊 Cost Breakdown
+**Timing:** Packer build ~10-15 min, first Terraform apply ~20-25 min, updates 2-5 min
 
-### Development (~$165/month)
-| Service | Config | Cost |
-|---------|--------|------|
-| NAT Gateway | 1x | ~$35 |
-| EC2 (Jenkins) | 1x t3.medium | ~$30 |
-| RDS MySQL | db.t3.micro, single-AZ, 20GB | ~$15 |
-| EKS Control Plane | 1 cluster | $73 |
-| EKS Workers | 2x t3.small | ~$30 |
+## 📊 Cost Analysis
 
-### Production (~$310/month)
-| Service | Config | Cost |
-|---------|--------|------|
-| NAT Gateway | 2x (HA) | ~$70 |
-| EC2 (Jenkins) | 1x t3.medium | ~$30 |
-| RDS MySQL | db.t3.small, Multi-AZ, 50GB | ~$50 |
-| EKS Control Plane | 1 cluster | $73 |
-| EKS Workers | 3x t3.medium | ~$90 |
+**Development:** ~$165/month (cost-optimized for learning)  
+**Production:** ~$310/month (high availability and performance)
 
-**Difference:** +$145/month for HA NAT, larger instances, Multi-AZ RDS, more EKS capacity.
+Strategic cost vs security tradeoffs learned through hands-on experimentation.
 
-**Savings:** Removed second Jenkins EC2 instance (~$15/month dev, ~$30/month prod) by using EKS pods for Jenkins agents.
+[View detailed cost breakdown →](docs/cost-breakdown.md)
 
 ## 🤖 AI-Assisted Development
 
-Built with **Amazon Q** and **Gemini Code Assist** as productivity tools, not code generators.
+Built with **Amazon Q** and **Gemini Code Assist** as productivity tools for code review, documentation, and debugging. Architecture design, module creation, and all technical decisions were human-made. Every line was reviewed, understood, and intentionally committed.
 
-**AI Used For:** Code review (security issues, best practices), documentation (variable descriptions, README), debugging (Terraform syntax, AWS configs), learning (AWS concepts, patterns).
+## 🎓 Key Learnings
 
-**AI Didn't Do:** Architecture design, module creation, tradeoff decisions, understanding project context.
-
-**Result:** Saved hours on documentation and debugging, allowing focus on AWS services, design decisions, and real infrastructure problems. Every line reviewed, understood, and intentionally committed.
-
-**Production Creation:** Amazon Q replicated dev to prod by adjusting variables (NAT, RDS, instance sizes) - demonstrating modular design benefits.
-
-**Post-Deployment Review:** After initial completion, Amazon Q performed comprehensive code review and identified 5 integration issues:
-1. **Packer-built AMI not integrated** - Terraform was using hardcoded AMI ID instead of automatically using latest Packer build (FIXED)
-2. **EKS-RDS connectivity broken** - Security group configuration prevented pods from reaching database (FIXED)
-3. **Multi-environment deployment limitation** - Security group names would conflict if dev and prod deployed to same AWS account (FIXED)
-4. **NAT Gateway routing logic fragility** - Works correctly but relies on naming conventions (tracked for future improvement)
-5. **Jenkins-EKS connectivity broken** - Jenkins EC2 couldn't access EKS control plane API (kubectl timeout). EKS cluster security group didn't allow inbound HTTPS from Jenkins security group. Fixed by adding port 443 ingress rule (FIXED)
-
-Critical issues were analyzed, root causes identified, and fixes implemented, demonstrating iterative improvement and the value of thorough code review in catching integration problems before production deployment.
-
-## 🎓 What I Learned
-
-1. Building modular, reusable Terraform modules
-2. Encryption, IAM roles, network isolation
-3. Strategic cost vs security tradeoffs
-4. Deep dive into VPC, EKS, RDS, Secrets Manager, SSM
-5. Iterative improvements from code review
-6. When to optimize for cost vs security vs simplicity
-
-## 🔄 Project Evolution
-
-**Initial:** Basic VPC/EC2, hardcoded values, missing encryption, public EKS endpoint, numeric keys
-
-**Final:** Modular code, full encryption, secure access, descriptive naming, comprehensive docs, production-ready
-
-## 📝 Lessons Learned
-
-1. Packer-built AMI = consistency and stability
-2. Dev environments can make reasonable cost tradeoffs
-3. Documentation matters for future-you
-4. Modular design saves time and reduces errors
-5. Defense in depth: encryption + IAM + network + logging
+1. Building modular, reusable Terraform modules saves time and reduces errors
+2. Packer-built AMI provides consistency and stability (not AWS "latest" AMI)
+3. Strategic cost vs security tradeoffs (dev can make reasonable compromises)
+4. Defense in depth: encryption + IAM + network isolation + logging
+5. Deep dive into VPC, EKS, RDS, Secrets Manager, SSM, Pod Identity
+6. Documentation matters for future-you
+7. Iterative improvements from code review catch integration issues
 
 ## 🔮 Future Enhancements
 
-**Already Implemented:**
-- ✅ Production with Multi-AZ RDS
-- ✅ 2 NAT Gateways for HA
-- ✅ Separate dev/prod environments
-- ✅ EKS 1.34 with proper sizing
+The infrastructure is production-ready with Multi-AZ RDS, HA NAT Gateways, and proper sizing. Optional enhancements like GuardDuty, Prometheus/Grafana, and code quality tools can be added based on requirements.
 
-**Optional Additions:**
-- [ ] RDS read replicas (if read-heavy)
-- [ ] GuardDuty for threat detection
-- [ ] AWS Config for compliance
-- [ ] Secrets Manager auto-rotation
-- [ ] Prometheus & Grafana monitoring
-- [ ] CloudWatch alarms
-- [ ] AWS Backup automation
-- [ ] WAF for application protection
-
-**Code Quality Tools:**
-- [ ] pre-commit hooks
-- [ ] tflint (best practices)
-- [ ] tfsec (security scanning)
-- [ ] terraform fmt (CI/CD)
-
-See `docs/terraform-quality-tools.md` for setup instructions.
+[View enhancement roadmap →](docs/future-enhancements.md)
 
 ## 🤝 Contributing
 

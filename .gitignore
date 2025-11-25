@@ -5,7 +5,7 @@
 .terraform.lock.hcl
 
 # Documentation and notes
-docs/
+
 
 # Amazon Q workspace rules (personal preferences)
 .amazonq/
