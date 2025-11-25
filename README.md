@@ -9,7 +9,7 @@
 ![Jenkins](https://img.shields.io/badge/jenkins-%232C5263.svg?style=for-the-badge&logo=jenkins&logoColor=white)
 ![MySQL](https://img.shields.io/badge/mysql-%2300f.svg?style=for-the-badge&logo=mysql&logoColor=white)
 
-Production-ready AWS infrastructure managing **50+ cloud resources** across **2 environments** with **full CI/CD automation**. Built from scratch over **3 months** to demonstrate enterprise-grade DevOps practices, modern AWS services (2023-2024), security hardening, and infrastructure as code principles. Every line of infrastructure code written, debugged, and deployed hands-on.
+Production-ready AWS infrastructure managing **50+ cloud resources** across **2 environments** for **CI/CD automation**. Built from scratch over **5 months** to demonstrate enterprise-grade DevOps practices, modern AWS services (2023-2024), security hardening, and infrastructure as code principles. Every line of infrastructure code written, debugged, and deployed hands-on.
 
 ## 📦 Repository Scope
 
