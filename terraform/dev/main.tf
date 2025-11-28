@@ -168,6 +168,7 @@ module "eks" {
   node_min_size      = 1
   instance_types     = ["t3.small"]
   disk_size          = 20
+  chatbot_namespace  = "default"
 }
 
 # Parameter Store for RDS endpoint

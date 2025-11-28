@@ -191,6 +191,7 @@ module "eks" {
   node_min_size     = 2
   instance_types    = ["t3.medium"]
   disk_size         = 30
+  chatbot_namespace = "default"
 }
 
 # ========================================

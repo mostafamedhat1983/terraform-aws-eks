@@ -273,3 +273,71 @@ resource "aws_eks_pod_identity_association" "secrets_store_csi" {
     aws_eks_addon.secrets_store_csi_driver
   ]
 }
+
+# ========================================
+# Chatbot Backend Application
+# ========================================
+# IAM resources for chatbot backend pods to access AWS services
+# Backend requires: AWS Bedrock for AI model inference
+
+# ========================================
+# Chatbot Backend - IAM Policy
+# ========================================
+# Allows backend pods to invoke AWS Bedrock models
+# Scoped to specific model: deepseek.v3-v1:0
+
+resource "aws_iam_policy" "chatbot_backend_bedrock" {
+  name        = "${var.cluster_name}-chatbot-backend-bedrock"
+  description = "Policy for chatbot backend to access AWS Bedrock"
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "InvokeBedrock"
+        Effect = "Allow"
+        Action = [
+          "bedrock:InvokeModel",
+          "bedrock:InvokeModelWithResponseStream"
+        ]
+        Resource = "arn:aws:bedrock:us-east-2::foundation-model/deepseek.v3-v1:0"
+      }
+    ]
+  })
+}
+
+# ========================================
+# Chatbot Backend - IAM Role
+# ========================================
+# IAM role for chatbot backend pods using Pod Identity
+# Reuses role module for consistency
+
+module "chatbot_backend_role" {
+  source = "../role"
+  
+  name    = "${var.cluster_name}-chatbot-backend"
+  service = "pods.eks.amazonaws.com"
+  
+  policy_arns = [
+    aws_iam_policy.chatbot_backend_bedrock.arn
+  ]
+}
+
+# ========================================
+# Chatbot Backend - Pod Identity Association
+# ========================================
+# Links IAM role to chatbot backend service account
+# Enables backend pods to assume IAM role for AWS Bedrock access
+# Must match namespace where chatbot is deployed
+
+resource "aws_eks_pod_identity_association" "chatbot_backend" {
+  cluster_name    = aws_eks_cluster.this.name
+  namespace       = var.chatbot_namespace
+  service_account = "chatbot-backend-service-account"
+  role_arn        = module.chatbot_backend_role.role_arn
+
+  depends_on = [
+    aws_eks_addon.pod_identity_agent,
+    module.chatbot_backend_role
+  ]
+}

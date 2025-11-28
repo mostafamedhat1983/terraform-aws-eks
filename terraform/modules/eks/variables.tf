@@ -81,3 +81,9 @@ variable "environment" {
     error_message = "Environment must be either 'dev' or 'prod'."
   }
 }
+
+variable "chatbot_namespace" {
+  description = "Kubernetes namespace for chatbot application deployment"
+  type        = string
+  default     = "default"
+}
