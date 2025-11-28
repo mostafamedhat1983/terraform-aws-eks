@@ -170,11 +170,3 @@ module "eks" {
   disk_size          = 20
   chatbot_namespace  = "default"
 }
-
-# Parameter Store for RDS endpoint
-resource "aws_ssm_parameter" "rds_endpoint" {
-  name  = "rds-dev-endpoint"
-  type  = "String"
-  value = module.rds.db_endpoint
-}
-
