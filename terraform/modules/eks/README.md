@@ -82,10 +82,10 @@ module "eks" {
   - EBS CSI Driver with Pod Identity authentication
   - No OIDC provider required
 
-- **Secrets Management:**
-  - AWS Secrets Store CSI Driver with Pod Identity
-  - Environment-scoped secret access policies
-  - Mount secrets from AWS Secrets Manager as files
+- **Application IAM Integration:**
+  - Chatbot backend Pod Identity for AWS Bedrock and Secrets Manager
+  - Environment-scoped IAM policies for secure AWS access
+  - Direct secret retrieval from AWS Secrets Manager
 
 - **Monitoring:**
   - CloudWatch logging for API, audit, authenticator
@@ -100,7 +100,7 @@ module "eks" {
 - EBS CSI Driver role (via role module)
 - Pod Identity Association for EBS CSI
 - EBS CSI Driver addon
-- AWS Secrets Store CSI Driver addon
-- Secrets Store CSI Driver role (via role module)
-- Pod Identity Association for Secrets Store CSI
-- IAM policy for environment-scoped secret access
+- Chatbot Backend Bedrock IAM policy
+- Chatbot Backend Secrets Manager IAM policy
+- Chatbot Backend role (via role module)
+- Pod Identity Association for Chatbot Backend

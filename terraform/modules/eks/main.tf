@@ -183,102 +183,10 @@ resource "aws_eks_addon" "ebs_csi_driver" {
 }
 
 # ========================================
-# AWS Secrets Store CSI Driver
-# ========================================
-# Enables pods to mount secrets from AWS Secrets Manager as files
-# Primary use: Application secrets (database credentials, API keys)
-# Authentication: Pod Identity (modern approach, no OIDC needed)
-
-# Install Secrets Store CSI Driver addon
-resource "aws_eks_addon" "secrets_store_csi_driver" {
-  cluster_name = aws_eks_cluster.this.name
-  addon_name   = "aws-secrets-store-csi-driver-provider"
-
-  depends_on = [
-    aws_eks_addon.pod_identity_agent
-  ]
-}
-
-# ========================================
-# Secrets Store CSI Driver - IAM Policy
-# ========================================
-# Defines permissions for CSI driver to access Secrets Manager
-# Environment-scoped: dev can only access *-dev-* secrets, prod only *-prod-*
-
-resource "aws_iam_policy" "secrets_store_csi" {
-  name        = "${var.cluster_name}-secrets-store-csi-policy"
-  description = "Policy for Secrets Store CSI Driver to access ${var.environment} secrets"
-  
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "GetSecretValue"
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret"
-        ]
-        # Environment-specific wildcard: *-{environment}-*
-        # Dev example: platform-db-dev-credentials, chatbot-api-dev-keys
-        # Prod example: platform-db-prod-credentials, chatbot-api-prod-keys
-        Resource = [
-          "arn:aws:secretsmanager:*:${data.aws_caller_identity.this.account_id}:secret:platform-*-${var.environment}-*",
-          "arn:aws:secretsmanager:*:${data.aws_caller_identity.this.account_id}:secret:chatbot-*-${var.environment}-*",
-          "arn:aws:secretsmanager:*:${data.aws_caller_identity.this.account_id}:secret:monitoring-*-${var.environment}-*"
-        ]
-      },
-      {
-        Sid      = "ListSecrets"
-        Effect   = "Allow"
-        Action   = "secretsmanager:ListSecrets"
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-# ========================================
-# Secrets Store CSI Driver - IAM Role
-# ========================================
-# IAM role for Secrets Store CSI Driver using Pod Identity
-# Reuses role module for consistency with EBS CSI Driver
-
-module "secrets_store_csi_role" {
-  source = "../role"
-  
-  name    = "${var.cluster_name}-secrets-store-csi"
-  service = "pods.eks.amazonaws.com"
-  
-  policy_arns = [
-    aws_iam_policy.secrets_store_csi.arn
-  ]
-}
-
-# ========================================
-# Secrets Store CSI Driver - Pod Identity Association
-# ========================================
-# Links IAM role to Secrets Store CSI Driver service account
-# Enables CSI driver pods to assume the IAM role for AWS access
-
-resource "aws_eks_pod_identity_association" "secrets_store_csi" {
-  cluster_name    = aws_eks_cluster.this.name
-  namespace       = "kube-system"
-  service_account = "secrets-store-csi-driver-provider-aws"
-  role_arn        = module.secrets_store_csi_role.role_arn
-
-  depends_on = [
-    aws_eks_addon.pod_identity_agent,
-    module.secrets_store_csi_role,
-    aws_eks_addon.secrets_store_csi_driver
-  ]
-}
-
-# ========================================
 # Chatbot Backend Application
 # ========================================
 # IAM resources for chatbot backend pods to access AWS services
-# Backend requires: AWS Bedrock for AI model inference
+# Backend requires: AWS Bedrock for AI model inference, Secrets Manager for DB credentials
 
 # ========================================
 # Chatbot Backend - IAM Policy
@@ -307,6 +215,32 @@ resource "aws_iam_policy" "chatbot_backend_bedrock" {
 }
 
 # ========================================
+# Chatbot Backend - Secrets Manager IAM Policy
+# ========================================
+# Allows backend pods to read database credentials from Secrets Manager
+# Scoped to specific secret: platform-db-{env}-credentials
+
+resource "aws_iam_policy" "chatbot_backend_secrets" {
+  name        = "${var.cluster_name}-chatbot-backend-secrets"
+  description = "Policy for chatbot backend to access Secrets Manager"
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "ReadSecrets"
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = "arn:aws:secretsmanager:us-east-2:*:secret:platform-db-*"
+      }
+    ]
+  })
+}
+
+# ========================================
 # Chatbot Backend - IAM Role
 # ========================================
 # IAM role for chatbot backend pods using Pod Identity
@@ -319,7 +253,8 @@ module "chatbot_backend_role" {
   service = "pods.eks.amazonaws.com"
   
   policy_arns = [
-    aws_iam_policy.chatbot_backend_bedrock.arn
+    aws_iam_policy.chatbot_backend_bedrock.arn,
+    aws_iam_policy.chatbot_backend_secrets.arn
   ]
 }
 

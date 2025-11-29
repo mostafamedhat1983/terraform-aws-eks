@@ -36,7 +36,7 @@ Two complete environments:
 - **Kubernetes:** EKS 1.34 with 2x t3.small nodes (20GB disk)
 - **Networking:** 1 NAT Gateway
 - **Registry:** ECR for Docker images
-- **Secrets:** AWS Secrets Manager
+- **Secrets:** AWS Secrets Manager with init container retrieval
 
 ### Production Environment
 **High availability and performance:**
@@ -46,7 +46,7 @@ Two complete environments:
 - **Kubernetes:** EKS 1.34 with 3x t3.medium nodes (30GB disk)
 - **Networking:** 2 NAT Gateways (one per AZ)
 - **Registry:** Shared ECR (different tags per environment)
-- **Secrets:** Separate Secrets Manager per environment
+- **Secrets:** Separate Secrets Manager per environment with init container retrieval
 
 ## 🛠️ What Makes This Different
 
@@ -55,8 +55,9 @@ Two complete environments:
 **Modern AWS Features (2023-2024):**
 - **S3 Native State Locking (2024)** - `use_lockfile = true` instead of legacy DynamoDB approach
 - **EKS Access Entry API (2023)** - Modern user/role access management, replacing deprecated `aws-auth` ConfigMap
-- **EKS Pod Identity (2023)** - Simpler authentication for CSI drivers, eliminating OIDC/IRSA complexity
-- **Dual CSI Driver Setup** - EBS CSI for persistent storage + AWS Secrets Store CSI for mounting secrets from Secrets Manager directly into pods
+- **EKS Pod Identity (2023)** - Simpler authentication for pods and CSI drivers, eliminating OIDC/IRSA complexity
+- **EBS CSI Driver** - Persistent storage for Jenkins workspaces and stateful applications using Pod Identity
+- **Init Container Secrets Management** - Direct AWS Secrets Manager integration for improved debugging and reduced complexity
 - **ECR with IAM Authentication** - No Docker Hub credentials or rate limits
 
 **Security & Architecture:**
@@ -78,7 +79,7 @@ Two complete environments:
 
 **Key Capabilities:**
 - **Infrastructure as Code:** Terraform modules, state management, S3 native locking, multi-environment deployments
-- **Container Orchestration:** EKS cluster management, Pod Identity, CSI Drivers (EBS, Secrets Store), Kubernetes resource management
+- **Container Orchestration:** EKS cluster management, Pod Identity, EBS CSI Driver, Init containers for secrets, Kubernetes RBAC, resource management
 - **CI/CD Infrastructure:** Jenkins installation and setup, Packer AMI builds, Ansible configuration management, immutable infrastructure
 - **Security:** Zero-trust architecture, encryption (KMS), IAM least privilege, Secrets Manager integration, vulnerability scanning (Trivy), SSM Session Manager
 - **Cloud Architecture:** Multi-AZ design, high availability, automated backups, network isolation, cost optimization
@@ -137,10 +138,11 @@ AMI builds include automated vulnerability scanning with Trivy v0.67.2. Scans en
 Every architecture decision made through research and understanding of tradeoffs:
 
 - **NAT Gateway Strategy:** 1 NAT for dev (cost-optimized $35/mo), 2 NATs for prod (high availability $70/mo)
-- **EKS CSI Drivers:** EBS CSI for persistent volumes + Secrets Store CSI for mounting secrets, both using Pod Identity
+- **EBS CSI Driver:** Persistent storage using Pod Identity for Jenkins workspaces and stateful applications
+- **Secrets Management Architecture:** Init container approach for DB credentials. Evaluated AWS Secrets Store CSI Driver but chose init containers for improved debugging visibility (logs in application pod), reduced infrastructure dependencies (no CSI addon), and direct control over secret retrieval (~60 lines of code saved)
 - **Jenkins Architecture:** Controller on EC2 + ephemeral agents as EKS pods (cost-effective, scalable)
 - **SSM Session Manager:** Secure access without bastion hosts, SSH keys, or public endpoints
-- **Secrets Management:** Manual creation outside Terraform ensures persistence across `terraform destroy`
+- **RDS Secrets:** Manual creation outside Terraform ensures persistence across `terraform destroy`
 - **Immutable AMIs:** Packer + Ansible for consistency, not AWS "latest" or user data scripts
 
 [View detailed architecture decisions →](docs/architecture-decisions.md)  
@@ -180,6 +182,9 @@ aws ecr create-repository \
 ```
 
 **2. Create RDS Secrets:**
+
+Initial secrets need only `username`, `password`, and `dbname`. The RDS module automatically updates with `host` and `port` after database creation.
+
 ```bash
 # Dev
 aws secretsmanager create-secret \
@@ -193,6 +198,8 @@ aws secretsmanager create-secret \
   --secret-string '{"username":"admin","password":"YourStrongProdPassword","dbname":"platformdb"}' \
   --region us-east-2
 ```
+
+*Note: Application init containers fetch complete credentials (including host/port) automatically.*
 
 **3. Build Jenkins AMI:**
 ```bash
@@ -255,6 +262,23 @@ Built with **Amazon Q** and **Gemini Code Assist** as productivity tools for cod
 5. Deep dive into VPC, EKS, RDS, Secrets Manager, SSM, Pod Identity
 6. Documentation matters for future-you
 7. Iterative improvements from code review catch integration issues
+8. Testing architectural decisions reveals practical limitations not visible in documentation
+
+## 🔄 Architecture Evolution
+
+Real infrastructure evolves through testing and iteration:
+
+**Secrets Management Journey:**
+Initially implemented AWS Secrets Store CSI Driver following best practices documentation. After hands-on testing, identified debugging challenges (logs in kube-system namespace), architectural complexity (CSI driver → SecretProviderClass → volume mount), and limited error visibility. 
+
+Pivoted to **init container approach** after evaluation:
+- ✅ Simpler debugging: logs in application pod (`kubectl logs <pod> -c fetch-secrets`)
+- ✅ Better error visibility: direct AWS API error messages
+- ✅ Reduced complexity: eliminated CSI addon and ~60 lines of infrastructure code
+- ✅ Direct control: full visibility into secret retrieval logic
+- ⚠️ Trade-off: manual pod restart for secret rotation (acceptable for infrequent DB credential changes)
+
+**Lesson:** "Best practices" are context-dependent. Test implementations against your requirements, not just documentation recommendations. Being willing to refactor after evaluation demonstrates engineering maturity.
 
 ## 🔮 Future Enhancements
 
