@@ -79,9 +79,9 @@ Two complete environments:
 
 **Key Capabilities:**
 - **Infrastructure as Code:** Terraform modules, state management, S3 native locking, multi-environment deployments
-- **Container Orchestration:** EKS cluster management, Pod Identity, EBS CSI Driver, Init containers for secrets, Kubernetes RBAC, resource management
+- **Container Orchestration:** EKS cluster management, Pod Identity, EBS CSI Driver, Kubernetes RBAC, resource management
 - **CI/CD Infrastructure:** Jenkins installation and setup, Packer AMI builds, Ansible configuration management, immutable infrastructure
-- **Security:** Zero-trust architecture, encryption (KMS), IAM least privilege, Secrets Manager integration, vulnerability scanning (Trivy), SSM Session Manager
+- **Security:** Zero-trust architecture, encryption (KMS), IAM least privilege, Secrets Manager with Pod Identity, vulnerability scanning (Trivy), SSM Session Manager
 - **Cloud Architecture:** Multi-AZ design, high availability, automated backups, network isolation, cost optimization
 
 ## 📁 Project Structure
@@ -139,7 +139,7 @@ Every architecture decision made through research and understanding of tradeoffs
 
 - **NAT Gateway Strategy:** 1 NAT for dev (cost-optimized $35/mo), 2 NATs for prod (high availability $70/mo)
 - **EBS CSI Driver:** Persistent storage using Pod Identity for Jenkins workspaces and stateful applications
-- **Secrets Management Architecture:** Init container approach for DB credentials. Evaluated AWS Secrets Store CSI Driver but chose init containers for improved debugging visibility (logs in application pod), reduced infrastructure dependencies (no CSI addon), and direct control over secret retrieval (~60 lines of code saved)
+- **Secrets Management:** AWS Secrets Manager with Pod Identity. Init container implementation in application repository
 - **Jenkins Architecture:** Controller on EC2 + ephemeral agents as EKS pods (cost-effective, scalable)
 - **SSM Session Manager:** Secure access without bastion hosts, SSH keys, or public endpoints
 - **RDS Secrets:** Manual creation outside Terraform ensures persistence across `terraform destroy`

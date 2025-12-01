@@ -10,17 +10,17 @@ Comprehensive security implementation across all layers of the infrastructure.
 - ✅ Security groups with specific rules (no 0.0.0.0/0 ingress)
 - ✅ EKS control plane logging to CloudWatch
 - ✅ SSM Session Manager (no bastion host or SSH keys)
-- ✅ Secrets Manager for database credentials
+- ✅ Secrets Manager for database credentials with Pod Identity
 - ✅ KMS key rotation enabled for EKS secrets encryption
 - ✅ S3 state versioning enabled
-- ✅ AWS Secrets Store CSI Driver for mounting secrets from Secrets Manager
 
 ## Zero Secret Exposure
 
 - RDS credentials in Secrets Manager (encrypted with KMS)
 - Secrets created manually outside Terraform
 - Terraform reads via `data` source (no plaintext)
-- AWS Secrets Store CSI Driver mounts secrets as files in pods (no environment variables)
+- Pod Identity grants least-privilege access to Secrets Manager
+- Application uses init containers for secret retrieval (implementation in platform-ai-chatbot repository)
 - Secrets encrypted in transit and at rest in EKS (KMS encryption with automatic rotation)
 - Passwords never in Git, code, state files, logs, or container images
 - S3 versioning + native locking + encryption for state files

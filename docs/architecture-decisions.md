@@ -14,20 +14,19 @@ This document explains the key technical decisions made in this infrastructure p
 
 **Prod:** Multi-AZ, 50GB, 7-day backups, db.t3.small, timestamped final snapshots (prevents destroy conflicts)
 
-## EKS Storage & Secrets Management
+## EKS Storage
 
-The cluster includes two CSI drivers using EKS Pod Identity authentication:
-
-**EBS CSI Driver** - Persistent storage capabilities:
+**EBS CSI Driver** - Persistent storage using Pod Identity:
 - **Jenkins Agent Workspaces:** Persistent filesystem for code checkout, dependency caching, and build artifacts
 - **Future-Proofing:** Enables stateful applications (Prometheus, message queues, databases) without infrastructure changes
+- **Authentication:** Uses EKS Pod Identity with IAM role created via the role module (`service = "pods.eks.amazonaws.com"`), eliminating OIDC provider complexity
 
-**AWS Secrets Store CSI Driver** - Secrets management:
-- **Application Secrets:** Mount secrets from AWS Secrets Manager as files in pods
-- **Database Credentials:** Secure access to RDS credentials without hardcoding
-- **Environment-Scoped Access:** IAM policies restrict access to environment-specific secrets (dev/prod)
+## Secrets Management
 
-**Authentication:** Both drivers use EKS Pod Identity with IAM roles created via the role module (`service = "pods.eks.amazonaws.com"`), eliminating OIDC provider complexity.
+**AWS Secrets Manager with Pod Identity:**
+- Infrastructure provisions Secrets Manager and IAM permissions for pod-level access
+- Application implements init container pattern for secret retrieval (see platform-ai-chatbot repository)
+- Pod Identity eliminates need for OIDC configuration or static credentials
 
 ## EKS Configuration
 
