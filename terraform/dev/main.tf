@@ -25,6 +25,7 @@ module "network" {
   vpc_name       = "vpc-dev"
   vpc_cidr_block = "10.0.0.0/16"
   environment    = "dev"
+  cluster_name   = "platform-dev"
 
   public_subnets  = var.subnet_config
   private_subnets = var.private_subnet_config
