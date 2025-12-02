@@ -87,3 +87,8 @@ variable "chatbot_namespace" {
   type        = string
   default     = "default"
 }
+
+variable "vpc_id" {
+  description = "VPC ID where EKS cluster is deployed (required for AWS Load Balancer Controller)"
+  type        = string
+}

@@ -153,6 +153,7 @@ module "eks" {
   node_role_arn       = module.eks_node_role.role_arn
   jenkins_role_arn    = module.jenkins_role.role_arn
   cluster_version     = "1.34"
+  vpc_id              = module.network.vpc_id
   
   subnet_ids = [
     module.network.private_subnet_ids["eks-2a"],

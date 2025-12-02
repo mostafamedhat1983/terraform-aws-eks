@@ -276,3 +276,55 @@ resource "aws_eks_pod_identity_association" "chatbot_backend" {
     module.chatbot_backend_role
   ]
 }
+
+# ========================================
+# AWS Load Balancer Controller
+# ========================================
+# Enables automatic ALB/NLB provisioning for Kubernetes Ingress resources
+# Authentication: Pod Identity (modern approach, no OIDC needed)
+
+# Download official IAM policy from AWS GitHub
+data "http" "aws_load_balancer_controller_policy" {
+  url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.7.2/docs/install/iam_policy.json"
+}
+
+# Create IAM policy for AWS Load Balancer Controller
+resource "aws_iam_policy" "aws_load_balancer_controller" {
+  name        = "${var.cluster_name}-aws-load-balancer-controller"
+  description = "IAM policy for AWS Load Balancer Controller"
+  policy      = data.http.aws_load_balancer_controller_policy.response_body
+}
+
+# IAM role for AWS Load Balancer Controller using Pod Identity
+module "aws_load_balancer_controller_role" {
+  source = "../role"
+  
+  name    = "${var.cluster_name}-aws-load-balancer-controller"
+  service = "pods.eks.amazonaws.com"
+  
+  policy_arns = [
+    aws_iam_policy.aws_load_balancer_controller.arn
+  ]
+}
+
+# Link IAM role to AWS Load Balancer Controller service account
+resource "aws_eks_pod_identity_association" "aws_load_balancer_controller" {
+  cluster_name    = aws_eks_cluster.this.name
+  namespace       = "kube-system"
+  service_account = "aws-load-balancer-controller"
+  role_arn        = module.aws_load_balancer_controller_role.role_arn
+
+  depends_on = [
+    aws_eks_addon.pod_identity_agent,
+    module.aws_load_balancer_controller_role
+  ]
+}
+
+# NOTE: AWS Load Balancer Controller installation removed from Terraform to avoid circular dependency
+# Install manually after cluster creation using:
+# helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+#   -n kube-system \
+#   --set clusterName=platform-dev \
+#   --set vpcId=<vpc-id> \
+#   --set serviceAccount.create=true \
+#   --set serviceAccount.name=aws-load-balancer-controller
