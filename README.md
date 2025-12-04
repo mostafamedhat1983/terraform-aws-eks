@@ -254,7 +254,9 @@ kubectl create token jenkins-sa --duration=8760h -n default  # Copy output
 ```
 
 **Add to Jenkins:** Manage Jenkins → Credentials → Add (Kind: Secret text, ID: `jenkins-k8s-token`)  
-**Configure Cloud:** Manage Jenkins → Configure Clouds → Add Kubernetes (URL: `https://<eks-endpoint>`, Credentials: jenkins-k8s-token, ☑️ Disable cert check)
+**Configure Cloud:** Manage Jenkins → Configure Clouds → Add Kubernetes  
+- URL: `https://<eks-endpoint>` | Namespace: default | Credentials: jenkins-k8s-token  
+- ☑️ Disable https certificate check | ☑️ WebSocket (required)
 
 [Detailed guide →](docs/jenkins-kubernetes-integration.md)
 
