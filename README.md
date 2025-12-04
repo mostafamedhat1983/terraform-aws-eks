@@ -56,7 +56,7 @@ Two complete environments:
 - **S3 Native State Locking (2024)** - `use_lockfile = true` instead of legacy DynamoDB approach
 - **EKS Access Entry API (2023)** - Modern user/role access management, replacing deprecated `aws-auth` ConfigMap
 - **EKS Pod Identity (2023)** - Simpler authentication for pods and CSI drivers, eliminating OIDC/IRSA complexity
-- **EBS CSI Driver** - Persistent storage for Jenkins workspaces and stateful applications using Pod Identity
+- **EBS CSI Driver** - Persistent storage for stateful applications using Pod Identity
 - **Init Container Secrets Management** - Direct AWS Secrets Manager integration for improved debugging and reduced complexity
 - **ECR with IAM Authentication** - No Docker Hub credentials or rate limits
 
