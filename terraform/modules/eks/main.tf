@@ -143,7 +143,7 @@ resource "aws_eks_addon" "pod_identity_agent" {
 # EBS CSI Driver
 # ========================================
 # Provides persistent storage capabilities using EBS volumes
-# Primary use: Jenkins agent workspaces, future stateful applications
+# Primary use: Stateful applications requiring persistent storage
 # Authentication: Pod Identity (modern approach, no OIDC needed)
 
 # IAM role for EBS CSI Driver using Pod Identity

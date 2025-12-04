@@ -138,7 +138,7 @@ AMI builds include automated vulnerability scanning with Trivy v0.67.2. Scans en
 Every architecture decision made through research and understanding of tradeoffs:
 
 - **NAT Gateway Strategy:** 1 NAT for dev (cost-optimized $35/mo), 2 NATs for prod (high availability $70/mo)
-- **EBS CSI Driver:** Persistent storage using Pod Identity for Jenkins workspaces and stateful applications
+- **EBS CSI Driver:** Persistent storage using Pod Identity for stateful applications
 - **Secrets Management:** AWS Secrets Manager with Pod Identity. Init container implementation in application repository
 - **Jenkins Architecture:** Controller on EC2 + ephemeral agents as EKS pods (cost-effective, scalable)
 - **SSM Session Manager:** Secure access without bastion hosts, SSH keys, or public endpoints
