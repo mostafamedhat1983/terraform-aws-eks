@@ -240,6 +240,24 @@ kubectl get nodes
 - First Terraform apply: ~20-25 min
 - Subsequent updates: ~2-5 min
 
+## 🔧 Post-Deployment: Jenkins-Kubernetes Integration
+
+**Configure Jenkins for dynamic EKS agent provisioning (5 min):**
+
+```bash
+# Connect and create service account
+aws ssm start-session --target <jenkins-instance-id> --region us-east-2
+aws eks update-kubeconfig --name platform-dev --region us-east-2
+kubectl create serviceaccount jenkins-sa -n default
+kubectl create clusterrolebinding jenkins-admin --clusterrole=cluster-admin --serviceaccount=default:jenkins-sa
+kubectl create token jenkins-sa --duration=8760h -n default  # Copy output
+```
+
+**Add to Jenkins:** Manage Jenkins → Credentials → Add (Kind: Secret text, ID: `jenkins-k8s-token`)  
+**Configure Cloud:** Manage Jenkins → Configure Clouds → Add Kubernetes (URL: `https://<eks-endpoint>`, Credentials: jenkins-k8s-token, ☑️ Disable cert check)
+
+[Detailed guide →](docs/jenkins-kubernetes-integration.md)
+
 ## 📊 Cost Analysis
 
 **Development:** ~$177/month (cost-optimized for learning)  
