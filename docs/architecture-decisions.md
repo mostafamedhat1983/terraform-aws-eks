@@ -30,7 +30,7 @@ This document explains the key technical decisions made in this infrastructure p
 
 ## EKS Configuration
 
-**Dev:** 2x t3.small nodes (desired: 2, min: 1, max: 3), 20GB disk
+**Dev:** 3x t3.small nodes (desired: 3, min: 1, max: 4), 20GB disk
 
 **Prod:** 3x t3.medium nodes (desired: 3, min: 2, max: 5), 30GB disk
 

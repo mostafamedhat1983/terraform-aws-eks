@@ -10,16 +10,16 @@ Detailed cost analysis for both development and production environments. All pri
 | EC2 (Jenkins) | 1x t3.medium | ~$30 |
 | RDS MySQL | db.t3.micro, single-AZ, 20GB | ~$12 |
 | EKS Control Plane | 1 cluster | $72 |
-| EKS Workers | 2x t3.small | ~$30 |
+| EKS Workers | 3x t3.small | ~$45 |
 
-**Total: ~$177/month** (cost-optimized for learning)
+**Total: ~$192/month** (cost-optimized for learning)
 
 **Cost Breakdown Details:**
 - NAT Gateway: $0.045/hour × 730 hours = $32.85/month
 - t3.medium EC2: ~$30.37/month (730 hours)
 - db.t3.micro RDS: ~$12.41/month
 - EKS Control Plane: $0.10/hour × 730 hours = $73/month
-- 2x t3.small EKS nodes: ~$15/month each = $30/month
+- 3x t3.small EKS nodes: ~$15/month each = $45/month
 
 ## Production Environment (~$294/month)
 
@@ -42,10 +42,10 @@ Detailed cost analysis for both development and production environments. All pri
 
 ## Cost Analysis
 
-**Difference:** +$117/month for production includes:
+**Difference:** +$102/month for production includes:
 - HA NAT Gateways: +$33/month (1 → 2 gateways)
 - Multi-AZ RDS: +$25/month (single-AZ → Multi-AZ with larger instance)
-- Increased EKS capacity: +$60/month (2x t3.small → 3x t3.medium)
+- Increased EKS capacity: +$45/month (3x t3.small → 3x t3.medium)
 
 **Savings:** Removed second Jenkins EC2 instance (~$15/month dev, ~$30/month prod) by using EKS pods for Jenkins agents.
 

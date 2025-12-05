@@ -17,7 +17,7 @@ packer build jenkins.pkr.hcl
 
 ## Output
 - **AMI:** `jenkins-YYYY-MM-DD-hhmm` in us-east-2
-- **Manifest:** `manifest.json` (contains AMI ID)
+- **Manifest:** `manifest.json` (contains AMI ID for Terraform reference)
 - **Security Report:** `trivy-report-YYYY-MM-DD-hhmm.json`
 
 ## Configuration
@@ -34,5 +34,5 @@ packer build jenkins.pkr.hcl
 
 ## Notes
 - Build takes ~10-15 minutes
-- AMI ID must be manually updated in Terraform variables (see docs/project-issues-and-improvements.md)
+- Terraform automatically uses latest AMI via data source lookup
 - Keep `manifest.json` for reference (gitignored)
