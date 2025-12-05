@@ -351,6 +351,21 @@ resource "aws_eks_pod_identity_association" "aws_load_balancer_controller" {
 # IAM resources for Jenkins pipeline pods to push Docker images to ECR
 # Jenkins pods use jenkins-sa service account in default namespace
 
+# IAM policy for Jenkins pipeline EC2 operations
+resource "aws_iam_policy" "jenkins_pipeline_ec2" {
+  name        = "${var.cluster_name}-jenkins-pipeline-ec2"
+  description = "Allow Jenkins pipeline pods to describe VPCs for ALB controller deployment"
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ec2:DescribeVpcs"]
+      Resource = "*"
+    }]
+  })
+}
+
 # IAM role for Jenkins pipeline pods using Pod Identity
 module "jenkins_pipeline_role" {
   source = "../role"
@@ -359,7 +374,8 @@ module "jenkins_pipeline_role" {
   service = "pods.eks.amazonaws.com"
   
   policy_arns = [
-    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser",
+    aws_iam_policy.jenkins_pipeline_ec2.arn
   ]
 }
 
