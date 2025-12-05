@@ -328,3 +328,34 @@ resource "aws_eks_pod_identity_association" "aws_load_balancer_controller" {
 #   --set vpcId=<vpc-id> \
 #   --set serviceAccount.create=true \
 #   --set serviceAccount.name=aws-load-balancer-controller
+
+# ========================================
+# Jenkins CI/CD Pipeline
+# ========================================
+# IAM resources for Jenkins pipeline pods to push Docker images to ECR
+# Jenkins pods use jenkins-sa service account in default namespace
+
+# IAM role for Jenkins pipeline pods using Pod Identity
+module "jenkins_pipeline_role" {
+  source = "../role"
+  
+  name    = "${var.cluster_name}-jenkins-pipeline"
+  service = "pods.eks.amazonaws.com"
+  
+  policy_arns = [
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+  ]
+}
+
+# Link IAM role to jenkins-sa service account
+resource "aws_eks_pod_identity_association" "jenkins_pipeline" {
+  cluster_name    = aws_eks_cluster.this.name
+  namespace       = "default"
+  service_account = "jenkins-sa"
+  role_arn        = module.jenkins_pipeline_role.role_arn
+
+  depends_on = [
+    aws_eks_addon.pod_identity_agent,
+    module.jenkins_pipeline_role
+  ]
+}
