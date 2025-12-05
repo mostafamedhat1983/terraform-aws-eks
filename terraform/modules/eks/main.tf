@@ -304,7 +304,10 @@ resource "aws_iam_policy" "aws_load_balancer_controller_supplement" {
     Version = "2012-10-17"
     Statement = [{
       Effect   = "Allow"
-      Action   = ["ec2:DescribeRouteTables"]
+      Action   = [
+        "ec2:DescribeRouteTables",
+        "elasticloadbalancing:DescribeListenerAttributes"
+      ]
       Resource = "*"
     }]
   })
