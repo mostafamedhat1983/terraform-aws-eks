@@ -79,7 +79,7 @@ resource "aws_eks_cluster" "this" {
 # ========================================
 # Managed node group for running workloads
 # Autoscaling configured via min/max/desired size
-# Dev: 2x t3.small (min: 1, max: 3)
+# Dev: 3x t3.small (min: 1, max: 4)
 # Prod: 3x t3.medium (min: 2, max: 5)
 
 resource "aws_eks_node_group" "this" {

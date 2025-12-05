@@ -33,7 +33,7 @@ Two complete environments:
 - **VPC:** 2 AZs, 8 subnets (2 public, 6 private)
 - **Compute:** 1x Jenkins Controller EC2 (t3.medium)
 - **Database:** RDS MySQL 8.0 (db.t3.micro, single-AZ, 20GB, encrypted)
-- **Kubernetes:** EKS 1.34 with 2x t3.small nodes (20GB disk)
+- **Kubernetes:** EKS 1.34 with 3x t3.small nodes (20GB disk)
 - **Networking:** 1 NAT Gateway
 - **Registry:** ECR for Docker images
 - **Secrets:** AWS Secrets Manager with init container retrieval
