@@ -177,15 +177,26 @@ resource "aws_security_group" "jenkins" {
   }
 }
 
+# Jenkins web UI and WebSocket (for Kubernetes plugin)
+resource "aws_security_group_rule" "jenkins_web" {
+  type                     = "ingress"
+  from_port                = 8080
+  to_port                  = 8080
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.eks_node.id
+  security_group_id        = aws_security_group.jenkins.id
+  description              = "Jenkins web UI from EKS pods"
+}
+
 # Jenkins agent communication (controller <-> agents in EKS)
 resource "aws_security_group_rule" "jenkins_agent" {
   type                     = "ingress"
   from_port                = 50000
   to_port                  = 50000
   protocol                 = "tcp"
-  source_security_group_id = aws_security_group.jenkins.id
+  source_security_group_id = aws_security_group.eks_node.id
   security_group_id        = aws_security_group.jenkins.id
-  description              = "Jenkins agent communication"
+  description              = "Jenkins agent communication from EKS pods"
 }
 
 # Allow Jenkins to reach internet (package updates, Git, ECR, etc.)
