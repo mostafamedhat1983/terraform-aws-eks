@@ -86,6 +86,20 @@ resource "aws_iam_policy" "jenkins_bedrock" {
   })
 }
 
+# Allow Jenkins to describe VPCs (for ALB controller deployment)
+resource "aws_iam_policy" "jenkins_ec2" {
+  name        = "jenkins-ec2-describe-dev"
+  description = "Allow Jenkins to describe VPCs for ALB controller VPC ID lookup"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ec2:DescribeVpcs"]
+      Resource = "*"
+    }]
+  })
+}
+
 module "jenkins_role" {
   source = "../modules/role"
   name   = "ec2-ssm-ecr-role-dev"
@@ -93,7 +107,8 @@ module "jenkins_role" {
     "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
     "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser",
     aws_iam_policy.jenkins_eks.arn,
-    aws_iam_policy.jenkins_bedrock.arn
+    aws_iam_policy.jenkins_bedrock.arn,
+    aws_iam_policy.jenkins_ec2.arn
   ]
 }
 
