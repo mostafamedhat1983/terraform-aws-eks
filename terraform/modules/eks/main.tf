@@ -295,6 +295,21 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
   policy      = data.http.aws_load_balancer_controller_policy.response_body
 }
 
+# Supplemental policy for missing permissions in official v2.7.2 policy
+resource "aws_iam_policy" "aws_load_balancer_controller_supplement" {
+  name        = "${var.cluster_name}-aws-load-balancer-controller-supplement"
+  description = "Additional permissions missing from official v2.7.2 policy"
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = ["ec2:DescribeRouteTables"]
+      Resource = "*"
+    }]
+  })
+}
+
 # IAM role for AWS Load Balancer Controller using Pod Identity
 module "aws_load_balancer_controller_role" {
   source = "../role"
@@ -303,7 +318,8 @@ module "aws_load_balancer_controller_role" {
   service = "pods.eks.amazonaws.com"
   
   policy_arns = [
-    aws_iam_policy.aws_load_balancer_controller.arn
+    aws_iam_policy.aws_load_balancer_controller.arn,
+    aws_iam_policy.aws_load_balancer_controller_supplement.arn
   ]
 }
 
