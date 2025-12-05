@@ -183,9 +183,9 @@ resource "aws_security_group_rule" "jenkins_web" {
   from_port                = 8080
   to_port                  = 8080
   protocol                 = "tcp"
-  source_security_group_id = aws_security_group.eks_node.id
+  source_security_group_id = var.eks_cluster_security_group_id
   security_group_id        = aws_security_group.jenkins.id
-  description              = "Jenkins web UI from EKS pods"
+  description              = "Jenkins web UI from EKS cluster"
 }
 
 # Jenkins agent communication (controller <-> agents in EKS)
@@ -194,9 +194,9 @@ resource "aws_security_group_rule" "jenkins_agent" {
   from_port                = 50000
   to_port                  = 50000
   protocol                 = "tcp"
-  source_security_group_id = aws_security_group.eks_node.id
+  source_security_group_id = var.eks_cluster_security_group_id
   security_group_id        = aws_security_group.jenkins.id
-  description              = "Jenkins agent communication from EKS pods"
+  description              = "Jenkins agent communication from EKS cluster"
 }
 
 # Allow Jenkins to reach internet (package updates, Git, ECR, etc.)
@@ -252,43 +252,7 @@ resource "aws_security_group_rule" "eks_from_jenkins" {
   description              = "Allow Jenkins to access EKS API"
 }
 
-# ========================================
-# EKS Node Security Group
-# ========================================
-# Controls network access for EKS worker nodes
-# Allows: Node-to-node communication, outbound internet
 
-resource "aws_security_group" "eks_node" {
-  name        = "${var.environment}-eks-node-sg"
-  description = "Security group for EKS worker nodes"
-  vpc_id      = aws_vpc.this.id
-
-  tags = {
-    Name = "${var.environment}-eks-node-sg"
-  }
-}
-
-# Allow EKS nodes to communicate with each other (pod networking)
-resource "aws_security_group_rule" "eks_node_self" {
-  type                     = "ingress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  source_security_group_id = aws_security_group.eks_node.id
-  security_group_id        = aws_security_group.eks_node.id
-  description              = "Allow nodes to communicate with each other"
-}
-
-# Allow nodes to reach internet (ECR, package repos, AWS APIs)
-resource "aws_security_group_rule" "eks_node_outbound" {
-  type              = "egress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.eks_node.id
-  description       = "Allow all outbound traffic"
-}
 
 # ========================================
 # VPC Endpoint Security Group

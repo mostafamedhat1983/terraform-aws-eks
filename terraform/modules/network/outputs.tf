@@ -46,10 +46,7 @@ output "rds_sg_id" {
   description = "RDS security group ID"
 }
 
-output "eks_node_sg_id" {
-  value       = aws_security_group.eks_node.id
-  description = "EKS node security group ID"
-}
+
 
 output "vpc_endpoints_sg_id" {
   value       = aws_security_group.vpc_endpoints.id
