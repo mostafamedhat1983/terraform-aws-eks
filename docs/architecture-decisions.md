@@ -4,9 +4,11 @@ This document explains the key technical decisions made in this infrastructure p
 
 ## NAT Gateway Strategy
 
-**Dev:** 1 NAT in us-east-2a (~$35/month) - acceptable risk for dev
-
-**Prod:** 2 NATs (~$70/month) - high availability, no cross-AZ traffic
+**Regional NAT Gateway (December 2024):**
+- Single NAT Gateway with built-in high availability across all AZs (~$35/month)
+- Replaces zonal NAT Gateways (previously 1 for dev, 2 for prod)
+- Same cost as single zonal NAT, but with automatic multi-AZ redundancy
+- Prod saves ~$35/month compared to 2 zonal NAT Gateways
 
 ## RDS Configuration
 

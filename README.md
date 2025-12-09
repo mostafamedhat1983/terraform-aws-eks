@@ -25,8 +25,8 @@ Every line of code was written with intention, reviewed, debugged, and improved 
 ## 🏗️ Architecture
 
 Two complete environments:   
-**Development** ( ~$177/month )  
-**Production** ( ~$294/month )
+**Development** ( ~$192/month )  
+**Production** ( ~$259/month )
 
 ### Development Environment
 **Cost-optimized for learning:**
@@ -34,7 +34,7 @@ Two complete environments:
 - **Compute:** 1x Jenkins Controller EC2 (t3.medium)
 - **Database:** RDS MySQL 8.0 (db.t3.micro, single-AZ, 20GB, encrypted)
 - **Kubernetes:** EKS 1.34 with 3x t3.small nodes (20GB disk)
-- **Networking:** 1 NAT Gateway
+- **Networking:** Regional NAT Gateway (high availability across AZs)
 - **Registry:** ECR for Docker images
 - **Secrets:** AWS Secrets Manager with init container retrieval
 
@@ -44,7 +44,7 @@ Two complete environments:
 - **Compute:** 1x Jenkins Controller EC2 (t3.medium)
 - **Database:** RDS MySQL 8.0 (db.t3.small, Multi-AZ, 50GB, 7-day backups, encrypted)
 - **Kubernetes:** EKS 1.34 with 3x t3.medium nodes (30GB disk)
-- **Networking:** 2 NAT Gateways (one per AZ)
+- **Networking:** Regional NAT Gateway (high availability across AZs)
 - **Registry:** Shared ECR (different tags per environment)
 - **Secrets:** Separate Secrets Manager per environment with init container retrieval
 
@@ -53,6 +53,7 @@ Two complete environments:
 **Built from scratch, not copied** - Every decision researched, debugged, and implemented through hands-on learning.
 
 **Modern AWS Features (2023-2024):**
+- **Regional NAT Gateway (December 2024)** - Single NAT Gateway with built-in high availability across all AZs, replacing zonal NAT Gateways
 - **S3 Native State Locking (2024)** - `use_lockfile = true` instead of legacy DynamoDB approach
 - **EKS Access Entry API (2023)** - Modern user/role access management, replacing deprecated `aws-auth` ConfigMap
 - **EKS Pod Identity (2023)** - Simpler authentication for pods and CSI drivers, eliminating OIDC/IRSA complexity
@@ -137,7 +138,7 @@ AMI builds include automated vulnerability scanning with Trivy v0.67.2. Scans en
 
 Every architecture decision made through research and understanding of tradeoffs:
 
-- **NAT Gateway Strategy:** 1 NAT for dev (cost-optimized $35/mo), 2 NATs for prod (high availability $70/mo)
+- **Regional NAT Gateway:** Single NAT Gateway with built-in high availability across all AZs ($35/mo), replacing zonal NAT Gateways
 - **EBS CSI Driver:** Persistent storage using Pod Identity for stateful applications
 - **Secrets Management:** AWS Secrets Manager with Pod Identity. Init container implementation in application repository
 - **Jenkins Architecture:** Controller on EC2 + ephemeral agents as EKS pods (cost-effective, scalable)
@@ -262,8 +263,10 @@ kubectl create token jenkins-sa --duration=8760h -n default  # Copy output
 
 ## 📊 Cost Analysis
 
-**Development:** ~$177/month (cost-optimized for learning)  
-**Production:** ~$294/month (high availability and performance)
+**Development:** ~$192/month (cost-optimized for learning)  
+**Production:** ~$259/month (high availability and performance)
+
+**Regional NAT Gateway Savings:** Prod saves ~$33/month compared to 2 zonal NAT Gateways while maintaining high availability across all AZs.
 
 Strategic cost vs security tradeoffs learned through hands-on experimentation. Pricing based on us-east-2 region (2025).
 

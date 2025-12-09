@@ -17,7 +17,7 @@ data "aws_ami" "jenkins" {
 # Network Infrastructure
 # ========================================
 # VPC with public/private subnets across 2 AZs
-# Prod: 2 NAT Gateways (high availability)
+# Regional NAT Gateway (high availability, cost-optimized)
 
 module "network" {
   source = "../modules/network"
@@ -31,7 +31,6 @@ module "network" {
   private_subnets = var.private_subnet_config
 
   igw_name                      = "igw-prod"
-  nat_gateway_count             = 2
   eks_cluster_security_group_id = module.eks.cluster_security_group_id
 }
 
