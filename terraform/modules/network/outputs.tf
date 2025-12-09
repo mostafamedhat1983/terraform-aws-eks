@@ -23,9 +23,9 @@ output "internet_gateway_id" {
   description = "The ID of the internet gateway"
 }
 
-output "nat_gateway_ids" {
-  value = { for k, v in aws_nat_gateway.this : k => v.id }
-  description = "The IDs of the nat gateways"
+output "nat_gateway_id" {
+  value = aws_nat_gateway.this.id
+  description = "The ID of the Regional NAT Gateway"
 }
 
 output "route_table_ids" {
@@ -53,7 +53,3 @@ output "vpc_endpoints_sg_id" {
   description = "VPC endpoints security group ID"
 }
 
-output "eip_ids" {
-  value = { for k, v in aws_eip.nat : k => v.id }
-  description = "The IDs of the EIPs"
-}
