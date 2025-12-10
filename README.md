@@ -25,15 +25,15 @@ Every line of code was written with intention, reviewed, debugged, and improved 
 ## 🏗️ Architecture
 
 Two complete environments:   
-**Development** ( ~$192/month )  
-**Production** ( ~$259/month )
+**Development** ( ~$207/month )  
+**Production** ( ~$289/month )
 
 ### Development Environment
 **Cost-optimized for learning:**
 - **VPC:** 2 AZs, 8 subnets (2 public, 6 private)
 - **Compute:** 1x Jenkins Controller EC2 (t3.medium)
 - **Database:** RDS MySQL 8.0 (db.t3.micro, single-AZ, 20GB, encrypted)
-- **Kubernetes:** EKS 1.34 with 3x t3.small nodes (20GB disk)
+- **Kubernetes:** EKS 1.34 with 4x t3.small nodes (20GB disk, 44 pods capacity)
 - **Networking:** Regional NAT Gateway (high availability across AZs)
 - **Registry:** ECR for Docker images
 - **Secrets:** AWS Secrets Manager with init container retrieval
@@ -43,7 +43,7 @@ Two complete environments:
 - **VPC:** Same architecture for consistency
 - **Compute:** 1x Jenkins Controller EC2 (t3.medium)
 - **Database:** RDS MySQL 8.0 (db.t3.small, Multi-AZ, 50GB, 7-day backups, encrypted)
-- **Kubernetes:** EKS 1.34 with 3x t3.medium nodes (30GB disk)
+- **Kubernetes:** EKS 1.34 with 4x t3.medium nodes (30GB disk, 68 pods capacity)
 - **Networking:** Regional NAT Gateway (high availability across AZs)
 - **Registry:** Shared ECR (different tags per environment)
 - **Secrets:** Separate Secrets Manager per environment with init container retrieval
@@ -263,10 +263,12 @@ kubectl create token jenkins-sa --duration=8760h -n default  # Copy output
 
 ## 📊 Cost Analysis
 
-**Development:** ~$192/month (cost-optimized for learning)  
-**Production:** ~$259/month (high availability and performance)
+**Development:** ~$207/month (cost-optimized for learning)  
+**Production:** ~$289/month (high availability and performance)
 
 **Regional NAT Gateway Savings:** Prod saves ~$33/month compared to 2 zonal NAT Gateways while maintaining high availability across all AZs.
+
+**Node Scaling:** Increased from 3 to 4 nodes per environment to support monitoring stack (Prometheus, Grafana, Falco) + application workloads. Dev: 44 pods capacity (11 per t3.small node), Prod: 68 pods capacity (17 per t3.medium node).
 
 Strategic cost vs security tradeoffs learned through hands-on experimentation. Pricing based on us-east-2 region (2025).
 
