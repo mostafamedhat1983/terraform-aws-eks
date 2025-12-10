@@ -179,8 +179,8 @@ module "eks" {
   endpoint_public_access  = false
 
   node_group_name    = "platform-dev-nodes"
-  node_desired_size  = 4
-  node_max_size      = 6
+  node_desired_size  = 5
+  node_max_size      = 7
   node_min_size      = 2
   instance_types     = ["t3.small"]
   disk_size          = 20
