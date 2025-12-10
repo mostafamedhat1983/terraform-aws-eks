@@ -14,7 +14,7 @@ Potential improvements and features for future iterations.
 - [x] Trivy vulnerability scanning in CI/CD (implemented)
 - [x] Network policies for zero-trust networking (implemented)
 - [x] Falco runtime security monitoring (implemented)
-- [ ] Pod Security Standards (evaluated but conflicts with Jenkins DinD - see pod-security-standards-troubleshooting.md)
+- [ ] Pod Security Standards (evaluated but conflicts with Jenkins DinD)
 - [ ] GuardDuty for threat detection
 - [ ] AWS Config for compliance monitoring
 - [ ] Secrets Manager auto-rotation
