@@ -13,7 +13,8 @@ Potential improvements and features for future iterations.
 ### Security & Compliance
 - [x] Trivy vulnerability scanning in CI/CD (implemented)
 - [x] Network policies for zero-trust networking (implemented)
-- [x] Pod Security Standards (implemented)
+- [x] Falco runtime security monitoring (implemented)
+- [ ] Pod Security Standards (evaluated but conflicts with Jenkins DinD - see pod-security-standards-troubleshooting.md)
 - [ ] GuardDuty for threat detection
 - [ ] AWS Config for compliance monitoring
 - [ ] Secrets Manager auto-rotation
@@ -21,7 +22,7 @@ Potential improvements and features for future iterations.
 
 ### High Availability & Backup
 - [x] Regional NAT Gateway for HA across AZs (implemented)
-- [ ] EKS Backup using AWS Backup service (released December 2024)
+- [ ] EKS Backup using AWS Backup service (released November 2024 - automated backup of EKS cluster configuration and resources)
 - [ ] RDS read replicas (if read-heavy workload)
 - [ ] Cross-region disaster recovery
 - [ ] Automated backup testing and restoration procedures
