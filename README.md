@@ -65,8 +65,13 @@ Two complete environments:
 - Comprehensive encryption (EBS, RDS, EKS secrets, S3) with zero secret exposure
 - Private EKS endpoint accessed via Jenkins EC2 using SSM Session Manager (no bastion, no SSH keys, no public IPs)
 - Flexible IAM role module reused for EC2, EKS, and Pod Identity by changing `service` parameter
-- Jenkins IAM restricted to specific cluster ARNs (not wildcard `*`)
+- Jenkins IAM: EKS cluster access (specific ARN), Bedrock access (model testing), EC2 DescribeVpcs (ALB controller VPC lookup), ECR PowerUser, SSM Session Manager
 - Packer-built immutable AMIs with Trivy vulnerability scanning (not user data scripts)
+
+**Application IAM Integration:**
+- Chatbot backend Pod Identity for AWS Bedrock DeepSeek V3.1 and Secrets Manager
+- Scoped IAM policies: specific model ARN, specific secret ARNs (not wildcard access)
+- No OIDC provider or IRSA complexity
 
 **Code Quality:**
 - Modular design with reusable Terraform modules (network, EC2, RDS, IAM, EKS)
@@ -268,7 +273,15 @@ kubectl create token jenkins-sa --duration=8760h -n default  # Copy output
 
 **Regional NAT Gateway Savings:** Prod saves ~$33/month compared to 2 zonal NAT Gateways while maintaining high availability across all AZs.
 
-**Node Scaling:** Increased from 3 to 4 nodes per environment to support monitoring stack (Prometheus, Grafana, Falco) + application workloads. Dev: 44 pods capacity (11 per t3.small node), Prod: 68 pods capacity (17 per t3.medium node).
+**Node Scaling:** Increased from initial 3 nodes to support monitoring stack (Prometheus, Grafana, Falco) + application workloads. Dev: 5× t3.small nodes (55 pods capacity), Prod: 4× t3.medium nodes (68 pods capacity).
+
+**Cost Drivers:**
+- EKS control plane: $73/mo (fixed, largest single cost)
+- Compute nodes: Dev $76/mo (5× t3.small), Prod $121/mo (4× t3.medium)
+- Regional NAT Gateway: $35/mo + data transfer
+- RDS: Dev $15/mo (single-AZ), Prod $30/mo (Multi-AZ)
+- Jenkins EC2: $30/mo (t3.medium)
+- ALB: Dev $16/mo (shared), Prod $32/mo (2 separate)
 
 Strategic cost vs security tradeoffs learned through hands-on experimentation. Pricing based on us-east-2 region (2025).
 
