@@ -16,7 +16,7 @@ Production-ready AWS infrastructure managing **85+ cloud resources** across **2 
 This repository provides the **infrastructure foundation** for the AWS EKS platform. It provisions AWS resources (VPC, EKS, RDS, networking, security) and prepares the cluster for application deployments. Application code, CI/CD pipelines, and Kubernetes manifests live in separate repositories, following platform engineering best practices.
 
 ## 🎯 Project Overview
-![repo 1](https://github.com/user-attachments/assets/b47d4767-8c8b-4c18-8b29-eff145e531a3)
+![repo 1](https://github.com/user-attachments/assets/7a326e72-c15f-4ded-8488-3f736caf8a13)
 
 
 
